@@ -1,0 +1,23 @@
+module WordyGame {
+
+  typedef sequence<string> StringSeq;
+
+  enum LoginResult {SUCCESS, INVALID_CREDENTIALS, ACCOUNT_ALREADY_LOGGED_IN};
+
+  struct WordyGamePlayer {
+    string username;
+    long wins;
+  };
+
+  interface WordyGameServer {
+    LoginResult login(in string username, in string password);
+    void logout(in string username);
+    void playGame(in string username);
+    StringSeq getLongestWords();
+    StringSeq getTopPlayers();
+  };
+
+  exception NoPlayersAvailable {
+    string reason;
+  };
+};
