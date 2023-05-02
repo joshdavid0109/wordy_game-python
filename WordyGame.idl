@@ -1,23 +1,80 @@
 module WordyGame {
 
-  typedef sequence<string> StringSeq;
+  struct TopWord{
+    string username;
+    string word;
+  };
 
-  enum LoginResult {SUCCESS, INVALID_CREDENTIALS, ACCOUNT_ALREADY_LOGGED_IN};
-
-  struct WordyGamePlayer {
+  struct TopPlayer {
+    long rank;
     string username;
     long wins;
   };
 
-  interface WordyGameServer {
-    LoginResult login(in string username, in string password);
-    void logout(in string username);
-    void playGame(in string username);
-    StringSeq getLongestWords();
-    StringSeq getTopPlayers();
+  typedef sequence<TopWord> TopWords;
+  typedef sequence<TopPlayer> TopPlayers;
+  typedef sequence<char> letters;
+
+  struct WordyGamePlayer {
+    long id;
+    long wins;
+    long gameID;
+    string status; // ready or not
   };
 
-  exception NoPlayersAvailable {
-    string reason;
+  struct Game {
+    long gameID;
+    string status;
+    WordyGamePlayer host;
+    WordyGamePlayer winner;
   };
+
+    exception NoPlayersAvailable {
+      string reason;
+    };
+
+    exception UserAlreadyLoggedIn{
+      string reason;
+    };
+
+    exception InvalidCredentials{
+      string reason;
+    };
+
+    exception InvalidPassword{
+      string reason;
+    };
+
+    exception ServerUnavailable {
+      string reason;
+    };
+
+    exception InvalidWord {
+      string reason;
+    };
+
+    exception WordLessThanFiveLetters{
+      string reason;
+    };
+
+    exception ExceededTimeLimit{
+      string reason;
+    };
+
+  interface WordyGameServer {
+    void login(in string username, in string password) raises (InvalidCredentials, UserAlreadyLoggedIn, InvalidPassword, ServerUnavailable);
+    void logout(in long userID);
+    long playGame(in long userID) raises (NoPlayersAvailable);
+    string ready(in long userID, in long gameID);
+    void checkWord(in string word, in long gameID, in long userID) raises (InvalidWord, WordLessThanFiveLetters, ExceededTimeLimit);
+    letters requestLetters(in string gameID);
+    string checkWinner(in string gameID);
+    boolean roundStatus(in string gameID);
+
+    TopWords getLongestWords();
+    TopPlayers getTopPlayers();
+  };
+
+
+
 };
