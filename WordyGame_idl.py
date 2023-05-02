@@ -269,6 +269,7 @@ WordyGameServer._d_ready = ((omniORB.tcInternal.tv_long, omniORB.tcInternal.tv_l
 WordyGameServer._d_checkWord = (((omniORB.tcInternal.tv_string,0), omniORB.tcInternal.tv_long, omniORB.tcInternal.tv_long), (), {_0_WordyGame.InvalidWord._NP_RepositoryId: _0_WordyGame._d_InvalidWord, _0_WordyGame.WordLessThanFiveLetters._NP_RepositoryId: _0_WordyGame._d_WordLessThanFiveLetters, _0_WordyGame.ExceededTimeLimit._NP_RepositoryId: _0_WordyGame._d_ExceededTimeLimit})
 WordyGameServer._d_requestLetters = (((omniORB.tcInternal.tv_string,0), ), (omniORB.typeMapping["IDL:WordyGame/letters:1.0"], ), None)
 WordyGameServer._d_checkWinner = (((omniORB.tcInternal.tv_string,0), ), ((omniORB.tcInternal.tv_string,0), ), None)
+WordyGameServer._d_getTimer = ((), (omniORB.tcInternal.tv_long, ), None)
 WordyGameServer._d_roundStatus = (((omniORB.tcInternal.tv_string,0), ), (omniORB.tcInternal.tv_boolean, ), None)
 WordyGameServer._d_getLongestWords = ((), (omniORB.typeMapping["IDL:WordyGame/TopWords:1.0"], ), None)
 WordyGameServer._d_getTopPlayers = ((), (omniORB.typeMapping["IDL:WordyGame/TopPlayers:1.0"], ), None)
@@ -301,6 +302,9 @@ class _objref_WordyGameServer (CORBA.Object):
     def checkWinner(self, *args):
         return self._obj.invoke("checkWinner", _0_WordyGame.WordyGameServer._d_checkWinner, args)
 
+    def getTimer(self, *args):
+        return self._obj.invoke("getTimer", _0_WordyGame.WordyGameServer._d_getTimer, args)
+
     def roundStatus(self, *args):
         return self._obj.invoke("roundStatus", _0_WordyGame.WordyGameServer._d_roundStatus, args)
 
@@ -320,7 +324,7 @@ class WordyGameServer (PortableServer.Servant):
     _NP_RepositoryId = _0_WordyGame.WordyGameServer._NP_RepositoryId
 
 
-    _omni_op_d = {"login": _0_WordyGame.WordyGameServer._d_login, "logout": _0_WordyGame.WordyGameServer._d_logout, "playGame": _0_WordyGame.WordyGameServer._d_playGame, "ready": _0_WordyGame.WordyGameServer._d_ready, "checkWord": _0_WordyGame.WordyGameServer._d_checkWord, "requestLetters": _0_WordyGame.WordyGameServer._d_requestLetters, "checkWinner": _0_WordyGame.WordyGameServer._d_checkWinner, "roundStatus": _0_WordyGame.WordyGameServer._d_roundStatus, "getLongestWords": _0_WordyGame.WordyGameServer._d_getLongestWords, "getTopPlayers": _0_WordyGame.WordyGameServer._d_getTopPlayers}
+    _omni_op_d = {"login": _0_WordyGame.WordyGameServer._d_login, "logout": _0_WordyGame.WordyGameServer._d_logout, "playGame": _0_WordyGame.WordyGameServer._d_playGame, "ready": _0_WordyGame.WordyGameServer._d_ready, "checkWord": _0_WordyGame.WordyGameServer._d_checkWord, "requestLetters": _0_WordyGame.WordyGameServer._d_requestLetters, "checkWinner": _0_WordyGame.WordyGameServer._d_checkWinner, "getTimer": _0_WordyGame.WordyGameServer._d_getTimer, "roundStatus": _0_WordyGame.WordyGameServer._d_roundStatus, "getLongestWords": _0_WordyGame.WordyGameServer._d_getLongestWords, "getTopPlayers": _0_WordyGame.WordyGameServer._d_getTopPlayers}
 
 WordyGameServer._omni_skeleton = WordyGameServer
 _0_WordyGame__POA.WordyGameServer = WordyGameServer
