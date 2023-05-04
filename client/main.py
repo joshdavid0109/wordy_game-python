@@ -25,18 +25,49 @@ class LogIn(tk.Frame):
         passwordTextField = tk.Entry(self, width=30, bd=1)
         passwordTextField.place(x=120, y=50)
 
-        logInButton = tk.Button(self, text="ENTER", command=lambda: controller.show_frame(MainMenu))
+        def verify():
+            #todo uhm login validation thru remote shit invocation
+            loginSuccess = False
+            userId = userIdTextField.get()
+            password = passwordTextField.get()
+            #func that will validate userid and pass sa server and return true if okay or i mean pag walang exception na nakuha idk pahelp
+
+            #hardcode lang for the meantime
+            if userId == "yes" and password == "yes":
+                loginSuccess = True
+
+            if loginSuccess==True:
+                controller.show_frame(MainMenu)
+                print("LOG IN OK:)")
+            else:
+                #cacatch ng exception dapat here
+                print("LOG IN NOT OK:(")
+
+
+        logInButton = tk.Button(self, text="ENTER", command=verify)
+        #logInButton = tk.Button(self, text="ENTER", command=lambda: controller.show_frame(MainMenu))
         logInButton.place(x=180, y=90)
 
 
 class MainMenu(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        Label = tk.Label(self, text="MainMenu")
-        Label.place(x=230, y=230)
 
-        Button = tk.Button(self, text="next", command=lambda: controller.show_frame(Game))
-        Button.place(x=400, y=300)
+        #hindi gumagana kapag 2022-2_9328-fingrp7_others/res/bookCover.jpg lang nilagay ko :(
+        image = Image.open("C:/Users/ADMIN/PycharmProjects/2022-2_9328-fingrp7_others/res/bookCover.jpg")
+        photo = ImageTk.PhotoImage(image)
+
+        background = tk.Label(self, image=photo)
+        background.image = photo
+        background.place(relx=0, rely=0, relwidth=1, relheight=1)
+
+        wordyLabel = tk.Label(self, text="WORDY")
+        #TODO HOW TO ACTUALLY CENTER THIS FKN LABEL
+        wordyLabel.place(x=50, y=50, anchor="center")
+        #wordyLabel.configure(anchor="center")
+
+        playGameBTN = tk.Button(self, text="PLAY GAME", command=lambda: controller.show_frame(Game))
+        playGameBTN.place(x=50, y=100)
 
 
 class Game(tk.Frame):
@@ -57,8 +88,8 @@ class Application(tk.Tk):
         window = tk.Frame(self)
         window.pack()
 
-        window.grid_rowconfigure(0, minsize=400)
-        window.grid_columnconfigure(0, minsize=800)
+        window.grid_rowconfigure(0, minsize=350)
+        window.grid_columnconfigure(0, minsize=350)
 
         self.frames = {}
         for F in (LogIn, MainMenu, Game):
