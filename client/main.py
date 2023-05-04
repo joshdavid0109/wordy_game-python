@@ -7,12 +7,26 @@ from PIL import Image, ImageTk
 
 class LogIn(tk.Frame):
     def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        Label = tk.Label(self, text="LogIn")
-        Label.place(x=230, y=230)
+        tk.Frame.__init__(self, parent, width=250,height=200)
 
-        Button = tk.Button(self, text="next", font=("Arial", 15), command=lambda: controller.show_frame(MainMenu))
-        Button.place(x=400, y=300)
+
+        #border = tk.LabelFrame(self, text='login', bg ='ivory', bd = 2, font=("Arial", 20))
+        #border.pack(fill="both", expand="yes", padx = 100, pady = 100)
+
+        userIdLabel = tk.Label(self, text="UserID")
+        userIdLabel.place(x=20, y=20)
+
+        userIdTextField = tk.Entry(self, width = 30, bd = 1)
+        userIdTextField.place(x=120, y= 20)
+
+        passwordLabel = tk.Label(self, text="Password")
+        passwordLabel.place(x=20, y=50)
+
+        passwordTextField = tk.Entry(self, width=30, bd=1)
+        passwordTextField.place(x=120, y=50)
+
+        logInButton = tk.Button(self, text="ENTER", command=lambda: controller.show_frame(MainMenu))
+        logInButton.place(x=180, y=90)
 
 
 class MainMenu(tk.Frame):
@@ -22,7 +36,7 @@ class MainMenu(tk.Frame):
         Label.place(x=230, y=230)
 
         Button = tk.Button(self, text="next", command=lambda: controller.show_frame(Game))
-        Button.place(x=650, y=450)
+        Button.place(x=400, y=300)
 
 
 class Game(tk.Frame):
