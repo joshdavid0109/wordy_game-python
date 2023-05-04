@@ -2,9 +2,12 @@
 
 import sys
 
-from omniORB import CORBA
+from omniORB import CORBA, orb
 from COS import CosNaming_idl
 from configparser import ConfigParser
+
+import WordyGame
+
 
 class Connector:
 
@@ -31,7 +34,7 @@ class Connector:
             print("name not found")
             sys.exit(1)
 
-        self.hello = self.obj._narrow(HelloApp.Hello)
+        self.WordyGame = self.obj._narrow(WordyGame.WordyGame)
 
         print("gumagana")
 
@@ -40,15 +43,14 @@ class Connector:
         self.args = []
 
         # read the configuration file
-        # config = ConfigParser()
-        # config.read('config.ini')
+        config = ConfigParser()
+        config.read('config.ini')
 
         host = "localhost"
         port = 900
 
         self.args = ['connector.py', '-ORBInitRef', 'NameService=corbaname::{host}:{port}'.format(host=host, port=port)]
-
-    # self.helloApp = self.obj._narrow(HelloApp.HelloApp_idl.Hello)
+        #self.helloApp = self.obj._narrow(HelloApp.HelloApp_idl.Hello)
 
     # self.helloApp.sayHello();
 
@@ -65,4 +67,4 @@ class Connector:
 # # print("I said '%s'. The object said '%s'." % (message, result))
 #
 #
-# orb.run()
+#orb.run()

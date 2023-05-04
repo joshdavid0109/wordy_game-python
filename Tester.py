@@ -1,7 +1,7 @@
 import sys
 from omniORB import CORBA
 
-from ClientApp import Connector
+from Connector import Connector
 
 con = Connector(sys.argv)
 
