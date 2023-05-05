@@ -4,6 +4,8 @@ from tkinter import *
 from tkinter.ttk import *
 from PIL import Image, ImageTk
 
+Font = ("Comic Sans MS", 15, "bold")
+
 
 class LogIn(tk.Frame):
     def __init__(self, parent, controller):
@@ -27,6 +29,7 @@ class LogIn(tk.Frame):
 
         def verify():
             #todo uhm login validation thru remote shit invocation
+
             loginSuccess = False
             userId = userIdTextField.get()
             password = passwordTextField.get()
@@ -54,20 +57,37 @@ class MainMenu(tk.Frame):
         tk.Frame.__init__(self, parent)
 
         #hindi gumagana kapag 2022-2_9328-fingrp7_others/res/bookCover.jpg lang nilagay ko :(
-        image = Image.open("C:/Users/ADMIN/PycharmProjects/2022-2_9328-fingrp7_others/res/bookCover.jpg")
+        image = Image.open("C:/Users/INSTRUCT-D522lab/PycharmProjects/2022-2_9328-fingrp7_other/res/bookCover.jpg")
         photo = ImageTk.PhotoImage(image)
 
         background = tk.Label(self, image=photo)
         background.image = photo
         background.place(relx=0, rely=0, relwidth=1, relheight=1)
 
+        #wordyLabel = tk.Label(self, text="WORDY", bg='green')
         wordyLabel = tk.Label(self, text="WORDY")
         #TODO HOW TO ACTUALLY CENTER THIS FKN LABEL
-        wordyLabel.place(x=50, y=50, anchor="center")
+        print(self.winfo_width())
+        print(self.winfo_height())
+        print(parent.winfo_width())
+        print(parent.winfo_height())
+        print(self.winfo_width())
+        print(self.winfo_screenwidth())
+        print(self.winfo_screenheight())
+        wordyLabel.place(x=170,y=50,anchor="center")
         #wordyLabel.configure(anchor="center")
 
-        playGameBTN = tk.Button(self, text="PLAY GAME", command=lambda: controller.show_frame(Game))
-        playGameBTN.place(x=50, y=100)
+        def open_countdown():
+            new = Toplevel(self)
+            new.geometry("750x250")
+            new.title("")
+            # Create a Label in New
+            #todo retrieve timer from server, countdowm, countdown will close after finishing timer, and will either go to main menu or game
+            #Label(new, text="Hey, Howdy?", font=('Helvetica 17 bold')).pack(pady=30)
+
+        #playGameBTN = tk.Button(self, text="PLAY GAME", command=lambda: controller.show_frame(Game), font=Font)
+        playGameBTN = tk.Button(self, text="PLAY GAME", command=open_countdown, font=Font)
+        playGameBTN.place(x=170, y=150, anchor='center')
 
 
 class Game(tk.Frame):
@@ -78,7 +98,8 @@ class Game(tk.Frame):
         Label.place(x=230, y=230)
 
         Button = tk.Button(self, text="next", command=lambda: controller.show_frame(LogIn))
-        Button.place(x=650, y=450)
+        #Button = tk.Button(self, text="next", command=open_countdown)
+        Button.place(x=230, y=300)
 
 
 class Application(tk.Tk):
@@ -87,6 +108,12 @@ class Application(tk.Tk):
 
         window = tk.Frame(self)
         window.pack()
+        window.pack_propagate(0)
+
+        Font_tuple = ("Comic Sans MS", 20, "bold")
+
+        self.resizable(False, False)
+        #self.wm_attributes("-transparentcolor", 'green')
 
         window.grid_rowconfigure(0, minsize=350)
         window.grid_columnconfigure(0, minsize=350)
