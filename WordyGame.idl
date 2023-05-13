@@ -67,10 +67,11 @@ module WordyGame {
     long playGame(in long userID) raises (NoPlayersAvailable);
     string ready(in long userID, in long gameID);
     void checkWord(in string word, in long gameID, in long userID) raises (InvalidWord, WordLessThanFiveLetters, ExceededTimeLimit);
-    letters requestLetters(in string gameID);
-    string checkWinner(in string gameID);
-    long getTimer();
-    boolean roundStatus(in string gameID);
+    long getRound(in long gameID);
+    string checkMatchStatus(in long gameID);
+    letters requestLetters(in long gameID);
+    string checkWinner(in long gameID);
+    long getTimer(in string of);
 
     TopWords getLongestWords();
     TopPlayers getTopPlayers();
