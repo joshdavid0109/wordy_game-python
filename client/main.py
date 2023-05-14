@@ -171,6 +171,8 @@ class Game(tk.Frame):
         # Set the focus on the frame to capture the key events
         self.focus_set()
 
+        self.executor = ThreadPoolExecutor(max_workers=2)
+
         # INDIVIDUAL LETTERS
         self.letter1 = tk.Label(self, fg="#333333", justify="center", text="1")
         self.letter2 = tk.Label(self, fg="#333333", justify="center", text="2")
@@ -240,14 +242,13 @@ class Game(tk.Frame):
     def ready(self):
         self.readyBTN.config(state="disabled")
 
-        executor_service = threading.Thread(target=self.getLetters())
-        scheduled_executor_service = threading.Thread(target=self.timer)
+        self.executor.submit(self.getLetters)
+        self.executor.submit(self.timer)
+
+        self.executor.shutdown(wait=False)
 
         print("X", userID)
         print("V", gameID)
-
-        executor_service.start()
-        scheduled_executor_service.start()
 
         print(eo.ready(int(userID), int(gameID)))
 
