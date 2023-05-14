@@ -236,8 +236,8 @@ class Game(tk.Frame):
         self.availableLetters = []
 
     def handle_key(self, event):
-        print(self.letters)
-        print(self.availableLetters)
+        # print(self.letters)
+        # print(self.availableLetters)
         if event.keysym == "Return":
             try:
                 entered_word = self.textWordy.cget("text")
@@ -284,21 +284,43 @@ class Game(tk.Frame):
 
         round_counter = lambda: self.addRound()
 
+    def roundTimer(self):
+        time.sleep(0.1)
+        print("roundTIMER STARTED")
+        roundTimer = eo.getTimer("round")
+        print("ROUND TMR " + str(roundTimer))
+        print(roundTimer)
+
+        if roundTimer == 0:
+            print("U SHOULD SEE THIS ROUND IS OVER OK!")
+            self.readyBTN.config(state="normal")
+
+        else:
+            print("ELSE")
+            timer_object_round = threading.Timer(roundTimer, self.roundTimer)
+            timer_object_round.start()
+
     def timer(self):
         print("TIMERWORK")
         global gameID, timer_value
         self.letters = list(eo.requestLetters(int(gameID)))
         print(self.letters)
+        time.sleep(0.1)
         timer_value = eo.getTimer("r")
         self.timerLabel.config(text=str(timer_value))
+
+        print("ASDASD", str(timer_value))
 
         if timer_value == 0:
             print("xxxxx" + str(self.letters))
             self.update_label_texts(self.letters)
             self.availableLetters = self.letters.copy()
+            self.roundTimer()
+
         else:
             timer_object = threading.Timer(timer_value, self.timer)
             timer_object.start()
+
 
     def addRound(self):
         self.roundNum += 1
