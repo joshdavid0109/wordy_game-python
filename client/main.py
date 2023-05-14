@@ -1,3 +1,4 @@
+import threading
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import *
@@ -14,6 +15,7 @@ connector = daConnector("localhost", 9999)#should be read sa config
 connector.connect()
 
 eo = Connector.getEo()
+gameID = None
 
 class LogIn(tk.Frame):
     def __init__(self, parent, controller):
@@ -40,10 +42,13 @@ class LogIn(tk.Frame):
             try:
                 eo.login(userId, password)
             except Exception as e:
-                #
+                userIdTextField.delete(0, "end")
+                passwordTextField.delete(0, "end")
+                messagebox.showwarning("ERROR", str(e.args[0]))
+                controller.show_frame(MainMenu)#TODO COMMENT OUT THIS LINE THIS IS FOR THE SAKE OF TESTING LANG !!
                 print(e)
             else:
-                print("log in OK:)")
+                print("log in OK:) ! welcome "+userId+"! ")
                 controller.show_frame(MainMenu)
 
         logInButton = tk.Button(self, text="ENTER", command=verify)
@@ -55,7 +60,7 @@ class MainMenu(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
 
-        #hindi gumagana kapag 2022-2_9328-fingrp7_others/res/bookCover.jpg lang nilagay ko :(
+        #hindi gumagana kapag 2022-2_9328-fingrp7_others/res/bookCover.jpg lang nilagay ko :( replace with absolute file path nalang
         image = Image.open("C:/Users/ADMIN/PycharmProjects/2022-2_9328-fingrp7_others/res/bookCover.jpg")
         photo = ImageTk.PhotoImage(image)
 
@@ -76,16 +81,44 @@ class MainMenu(tk.Frame):
         wordyLabel.place(x=170,y=50,anchor="center")
         #wordyLabel.configure(anchor="center")
 
+        def playGameButton():
+            try:
+                threading.Thread(target=playGame).start()
+                threading.Thread(target=open_countdown).start()
+            except Exception as e:
+                print(str(e.args[0]))
+
+
+        def play_game():
+            print("exec a")
+            eo.playGame(69)
+
+        def playGame():
+            try:
+                print("exec a")
+                gameID = eo.playGame(9)
+                print(gameID)
+            except Exception as e:
+                warningMsg(e)
+
         def open_countdown():
-            new = Toplevel(self)
-            new.geometry("750x250")
-            new.title("")
+            try:
+                print("exec b")
+                new = Toplevel(self)
+                new.geometry("750x250")
+                new.title("MATCH")
+
+                print(eo.getTimer("g"))
+                # this always 0 ^ :(
+            except Exception as e:
+                warningMsg(e)
+
             # Create a Label in New
             #todo retrieve timer from server, countdowm, countdown will close after finishing timer, and will either go to main menu or game
             #Label(new, text="Hey, Howdy?", font=('Helvetica 17 bold')).pack(pady=30)
 
         #playGameBTN = tk.Button(self, text="PLAY GAME", command=lambda: controller.show_frame(Game), font=Font)
-        playGameBTN = tk.Button(self, text="PLAY GAME", command=open_countdown, font=Font)
+        playGameBTN = tk.Button(self, text="PLAY GAME", command=playGameButton, font=Font)
         playGameBTN.place(x=170, y=150, anchor='center')
 
 
@@ -128,6 +161,9 @@ class Application(tk.Tk):
     def show_frame(self, page):
         frame = self.frames[page]
         frame.tkraise()
+
+def warningMsg(exception):
+    messagebox.showwarning("ERROR", str(exception.args[0]))
 
 
 app = Application()
