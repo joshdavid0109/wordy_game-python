@@ -6,6 +6,9 @@ import traceback
 from tkinter import messagebox
 from tkinter import *
 from tkinter.ttk import *
+
+from concurrent.futures import ThreadPoolExecutor
+
 from PIL import Image, ImageTk
 
 import Connector
@@ -19,7 +22,11 @@ connector.connect()
 
 eo = Connector.getEo()
 gameID = None
+userID = None
 timer_value = None
+roundNum = 0
+winsNum = 0
+letters = None
 
 
 def setGameID(num):
@@ -52,9 +59,12 @@ class LogIn(tk.Frame):
             try:
                 eo.login(userId, password)
             except Exception as e:
+                global userID
+                userID = userId  # TODO COMMENT OUT THIS LINE THIS IS FOR THE SAKE OF TESTING LANG !!
                 userIdTextField.delete(0, "end")
                 passwordTextField.delete(0, "end")
                 messagebox.showwarning("ERROR", str(e.args[0]))
+                print(userID)
                 controller.show_frame(MainMenu)  # TODO COMMENT OUT THIS LINE THIS IS FOR THE SAKE OF TESTING LANG !!
                 print(e)
             else:
@@ -154,7 +164,7 @@ class Game(tk.Frame):
         tk.Frame.__init__(self, parent)
         global gameID
 
-        self.textWordy = tk.Label(self, fg="#333333", justify="center", text="ASDASDASDASD")
+        self.textWordy = tk.Label(self, fg="#333333", justify="center", text="")
         self.textWordy.place(x=130, y=280)
 
         self.bind("<Key>", self.handle_key)
@@ -208,25 +218,63 @@ class Game(tk.Frame):
         self.winsNum = tk.Label(self, fg="#333333", justify="left", text="0")
         self.winsNum.place(x=70, y=150, width=30, height=25)
 
-        self.timer = tk.Label(self, fg="#333333", justify="center", text="10")
-        self.timer.place(x=20, y=260, width=70, height=25)
+        self.timerLabel = tk.Label(self, fg="#333333", justify="center", text="10")
+        self.timerLabel.place(x=20, y=260, width=70, height=25)
 
-        self.gameIDLabel = tk.Label(self, fg="#333333", justify="left", text="GAME ID: " + str(gameID))
+        self.gameIDLabel = tk.Label(self, fg="#333333", justify="left", text=str(gameID))
         self.gameIDLabel.place(x=10, y=10, width=70, height=25)
 
-        #self.wordTextField = tk.Entry(self, width=25, bd=1)
-        #self.wordTextField.place(x=130, y=280)
+        # self.wordTextField = tk.Entry(self, width=25, bd=1)
+        # self.wordTextField.place(x=130, y=280)
 
-        # super lag, will change command, for the sake of testing lang yung update_label_Texts
-        self.readyBTN = tk.Button(self, text="READY", command=lambda: update_label_texts(self, eo.requestLetters(gameID)))  # test lang, will change
+        self.readyBTN = tk.Button(self, text="READY", command=self.ready)  # test lang, will change
         self.readyBTN.place(x=30, y=300)
 
-        def update_label_texts(self, char_array):
-            label_texts = [getattr(self, f"letter{i}") for i in range(1, 18)]
-            for i in range(len(char_array)):
-                label_texts[i].configure(text=char_array[i])
-        # test
-        print(gameID)
+        self.roundNum = 0
+
+    def update_label_texts(self, char_array):
+        label_texts = [getattr(self, f"letter{i}") for i in range(1, 18)]
+        for i in range(len(char_array)):
+            label_texts[i].configure(text=char_array[i])
+
+    def ready(self):
+        self.readyBTN.config(state="disabled")
+
+        executor_service = threading.Thread(target=self.getLetters())
+        scheduled_executor_service = threading.Thread(target=self.timer)
+
+        print("X", userID)
+        print("V", gameID)
+
+        executor_service.start()
+        scheduled_executor_service.start()
+
+        print(eo.ready(int(userID), int(gameID)))
+
+        #result = lambda: eo.check_winner(gameID)
+        #executor_service.submit(result)
+
+        round_counter = lambda: self.addRound()
+
+    def getLetters(self):
+        global letters, gameID
+        letters = eo.requestLetters(int(gameID))
+
+    def timer(self):
+        global timer_value
+        timer_value = eo.getTimer("r")
+        self.timerLabel.config(text=str(timer_value))
+        if timer_value == 0:
+            print("xxxxx"+letters)
+            self.update_label_texts(letters)
+
+
+    def addRound(self):
+        self.roundNum += 1
+        self.roundNum.config(text=str(self.roundNum))
+
+    # test
+    print(gameID)
 
     def handle_key(self, event):
         if event.keysym == "Return":
