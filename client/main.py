@@ -35,23 +35,16 @@ class LogIn(tk.Frame):
         passwordTextField.place(x=120, y=50)
 
         def verify():
-
-            loginSuccess = False
             userId = userIdTextField.get()
             password = passwordTextField.get()
-            #func that will validate userid and pass sa server and return true if okay or i mean pag walang exception na nakuha idk pahelp
-            print(eo.login(userId, password))
-            #hardcode lang for the meantime
-            if userId == "yes" and password == "yes":
-                loginSuccess = True
-
-            if loginSuccess==True:
-                controller.show_frame(MainMenu)
-                print("LOG IN OK:)")
+            try:
+                eo.login(userId, password)
+            except Exception as e:
+                #
+                print(e)
             else:
-                #cacatch ng exception dapat here
-                print("LOG IN NOT OK:(")
-
+                print("log in OK:)")
+                controller.show_frame(MainMenu)
 
         logInButton = tk.Button(self, text="ENTER", command=verify)
         #logInButton = tk.Button(self, text="ENTER", command=lambda: controller.show_frame(MainMenu))
