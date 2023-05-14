@@ -6,11 +6,27 @@ import WordyGame
 # Manually pagtype ng method pag first time iinvoke
 # -ORBInitRef NameService=corbaname::localhost:9999
 
-orb = CORBA.ORB_init(sys.argv, CORBA.ORB_ID)
-obj = orb.string_to_object("corbaname::localhost:9999#Hello")  # default corba object name::{host}:{port}
+eo = None
 
-wordyGameServer = obj._narrow(WordyGame.WordyGameServer)
+class daConnector:
+    def __init__(self, host, port):
+        self.host = host
+        self.port = port
+        self.orb = None
+        self.wordyGameServer = None
 
-print(wordyGameServer.login("admin", "pass"))
+    def connect(self):
+        try:
+            self.orb = CORBA.ORB_init(sys.argv, CORBA.ORB_ID)
+            obj = self.orb.string_to_object(f"corbaname::{self.host}:{self.port}#Hello")
+            self.wordyGameServer = obj._narrow(WordyGame.WordyGameServer)
+            global eo
+            eo = obj._narrow(WordyGame.WordyGameServer)
+            print("CONNECTED:)")
+        except Exception as e:
+            print("AAerror "+e)
 
-wordyGameServer.playGame();
+
+def getEo():
+    global eo
+    return eo

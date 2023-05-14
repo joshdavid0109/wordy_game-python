@@ -4,13 +4,20 @@ from tkinter import *
 from tkinter.ttk import *
 from PIL import Image, ImageTk
 
+import Connector
+import WordyGame
+from Connector import daConnector
+
 Font = ("Comic Sans MS", 15, "bold")
 
+connector = daConnector("localhost", 9999)#should be read sa config
+connector.connect()
+
+eo = Connector.getEo()
 
 class LogIn(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent, width=250,height=200)
-
 
         #border = tk.LabelFrame(self, text='login', bg ='ivory', bd = 2, font=("Arial", 20))
         #border.pack(fill="both", expand="yes", padx = 100, pady = 100)
@@ -28,13 +35,12 @@ class LogIn(tk.Frame):
         passwordTextField.place(x=120, y=50)
 
         def verify():
-            #todo uhm login validation thru remote shit invocation
 
             loginSuccess = False
             userId = userIdTextField.get()
             password = passwordTextField.get()
             #func that will validate userid and pass sa server and return true if okay or i mean pag walang exception na nakuha idk pahelp
-
+            print(eo.login(userId, password))
             #hardcode lang for the meantime
             if userId == "yes" and password == "yes":
                 loginSuccess = True
@@ -57,7 +63,7 @@ class MainMenu(tk.Frame):
         tk.Frame.__init__(self, parent)
 
         #hindi gumagana kapag 2022-2_9328-fingrp7_others/res/bookCover.jpg lang nilagay ko :(
-        image = Image.open("C:/Users/INSTRUCT-D522lab/PycharmProjects/2022-2_9328-fingrp7_other/res/bookCover.jpg")
+        image = Image.open("C:/Users/ADMIN/PycharmProjects/2022-2_9328-fingrp7_others/res/bookCover.jpg")
         photo = ImageTk.PhotoImage(image)
 
         background = tk.Label(self, image=photo)
