@@ -164,14 +164,13 @@ class Game(tk.Frame):
         tk.Frame.__init__(self, parent)
         global gameID
 
-        self.textWordy = tk.Label(self, fg="#333333", justify="center", text="")
+        self.textWordy = tk.Label(self, fg="#333333", justify="center", text="ASD")
         self.textWordy.place(x=130, y=280)
 
         self.bind("<Key>", self.handle_key)
         # Set the focus on the frame to capture the key events
         self.focus_set()
 
-        self.executor = ThreadPoolExecutor(max_workers=2)
 
         # INDIVIDUAL LETTERS
         self.letter1 = tk.Label(self, fg="#333333", justify="center", text="1")
@@ -234,49 +233,6 @@ class Game(tk.Frame):
 
         self.roundNum = 0
 
-    def update_label_texts(self, char_array):
-        label_texts = [getattr(self, f"letter{i}") for i in range(1, 18)]
-        for i in range(len(char_array)):
-            label_texts[i].configure(text=char_array[i])
-
-    def ready(self):
-        self.readyBTN.config(state="disabled")
-
-        self.executor.submit(self.getLetters)
-        self.executor.submit(self.timer)
-
-        self.executor.shutdown(wait=False)
-
-        print("X", userID)
-        print("V", gameID)
-
-        print(eo.ready(int(userID), int(gameID)))
-
-        #result = lambda: eo.check_winner(gameID)
-        #executor_service.submit(result)
-
-        round_counter = lambda: self.addRound()
-
-    def getLetters(self):
-        global letters, gameID
-        letters = eo.requestLetters(int(gameID))
-
-    def timer(self):
-        global timer_value
-        timer_value = eo.getTimer("r")
-        self.timerLabel.config(text=str(timer_value))
-        if timer_value == 0:
-            print("xxxxx"+letters)
-            self.update_label_texts(letters)
-
-
-    def addRound(self):
-        self.roundNum += 1
-        self.roundNum.config(text=str(self.roundNum))
-
-    # test
-    print(gameID)
-
     def handle_key(self, event):
         if event.keysym == "Return":
             self.textWordy.config(text="")
@@ -286,6 +242,54 @@ class Game(tk.Frame):
         else:
             current_text = self.textWordy.cget("text")
             self.textWordy.config(text=current_text + event.char)
+
+    def update_label_texts(self, char_array):
+        label_texts = [getattr(self, f"letter{i}") for i in range(1, 18)]
+        for i in range(len(char_array)):
+            label_texts[i].configure(text=char_array[i])
+
+    def ready(self):
+        self.readyBTN.config(state="disabled")
+
+        startCountdown = threading.Thread(target=self.timer())
+
+        print("X", userID)
+        print("V", gameID)
+
+        print(eo.ready(int(userID), int(gameID)))
+        startCountdown.start()
+        # result = lambda: eo.check_winner(gameID)
+        # executor_service.submit(result)
+
+        round_counter = lambda: self.addRound()
+
+    def getLetters(self):
+        print("GETLETTERSWORK")
+        global letters, gameID
+        letters = eo.requestLetters(int(gameID))
+
+    def timer(self):
+        print("TIMERWORK")
+        global letters, gameID, timer_value
+        letters = eo.requestLetters(int(gameID))
+        print(letters)
+        timer_value = eo.getTimer("r")
+        self.timerLabel.config(text=str(timer_value))
+
+        timer_object = threading.Timer(timer_value, self.timer)
+        timer_object.start()
+
+        print("xxxxx" + letters)
+        self.update_label_texts(letters)
+
+
+
+    def addRound(self):
+        self.roundNum += 1
+        self.roundNum.config(text=str(self.roundNum))
+
+    # test
+    print(gameID)
 
     def updTimer(self):
         print()
