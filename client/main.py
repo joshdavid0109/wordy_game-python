@@ -168,6 +168,7 @@ class Game(tk.Frame):
         self.focus_set()
         self.bind("<Key>", self.handle_key)
         self.focus_set()
+        self.stack = []
 
         # INDIVIDUAL LETTERS
         self.letter1 = tk.Label(self, fg="#333333", justify="center", text="1")
@@ -232,25 +233,35 @@ class Game(tk.Frame):
 
         self.letters = []
 
+        self.availableLetters = []
+
     def handle_key(self, event):
         print(self.letters)
-        availableLetters = list(self.letters)
-
-        print(availableLetters)
+        print(self.availableLetters)
         if event.keysym == "Return":
-            self.textWordy.config(text="")
+            try:
+                entered_word = self.textWordy.cget("text")
+                print("WORD SENT  : ", entered_word)
+                self.textWordy.config(text="")
+                self.availableLetters = self.letters.copy()
+                eo.checkWord(entered_word, int(gameID), int(userID))
+            except Exception as e:
+                print(str(e.args[0]))
+            else:
+                print("word is OK:)")
         elif event.keysym == "BackSpace":
             current_text = self.textWordy.cget("text")
             if current_text:
                 last_letter = current_text[-1]
                 self.textWordy.config(text=current_text[:-1])
-                availableLetters.append(last_letter)
+                self.stack.append(last_letter)
+                self.availableLetters.append(last_letter)
         else:
             pressed_letter = event.char.lower()
-            if pressed_letter in availableLetters:
+            if pressed_letter in self.availableLetters:
                 current_text = self.textWordy.cget("text")
                 self.textWordy.config(text=current_text + pressed_letter)
-                availableLetters.remove(pressed_letter)
+                self.availableLetters.remove(pressed_letter)
         self.textWordy.after(1, self.textWordy.update())
 
     def update_label_texts(self, char_array):
@@ -284,6 +295,7 @@ class Game(tk.Frame):
         if timer_value == 0:
             print("xxxxx" + str(self.letters))
             self.update_label_texts(self.letters)
+            self.availableLetters = self.letters.copy()
         else:
             timer_object = threading.Timer(timer_value, self.timer)
             timer_object.start()
