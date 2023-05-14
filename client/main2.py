@@ -1,5 +1,6 @@
 import random
 import threading
+import time
 import tkinter as tk
 import traceback
 from tkinter import messagebox
@@ -18,6 +19,7 @@ connector.connect()
 
 eo = Connector.getEo()
 gameID = None
+timer_value = None
 
 class LogIn(tk.Frame):
     def __init__(self, parent, controller):
@@ -99,29 +101,46 @@ class MainMenu(tk.Frame):
         def playGame():
             try:
                 print("exec a")
+
+                #random user id cuz idk
                 randomnum = random.randint(1000, 9999)
-                print(randomnum)
                 gameID = eo.playGame(randomnum)
+
                 print("GAME ID: ",gameID)
                 print(eo.getTimer("g"))
             except Exception as e:
                 traceback.print_exc()
                 print(e)
                 warningMsg(e)
+            else:
+                #put code ng game here
+                print("INGAME")
 
         def open_countdown():
             try:
                 print("exec b")
                 new = Toplevel(self)
-                new.geometry("750x250")
+                new.geometry("350x150")
                 new.title("MATCH")
 
-                print(eo.getTimer("g"))
-                # this always 0 ^ :(
+                #WAIT MUNA <1 SECOND KASI 0 MAKUKUHA NA ANO NUN TIMER PAG FIRST TYM HEHEH
+                time.sleep(0.1)
+
+                timerStart = eo.getTimer("g")
+
+                def close_window():
+                    new.destroy()
+
+                print(timerStart)
+                timer = threading.Timer(timerStart, close_window)
+                timer.start()
+
             except Exception as e:
                 traceback.print_exc()
                 print(e)
                 warningMsg(e)
+
+
 
             # Create a Label in New
             #todo retrieve timer from server, countdowm, countdown will close after finishing timer, and will either go to main menu or game
