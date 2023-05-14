@@ -99,20 +99,15 @@ class MainMenu(tk.Frame):
         def playGame():
             try:
                 print("exec a")
-
-                #random user id cuz idk
                 randomnum = random.randint(1000, 9999)
+                print(randomnum)
                 gameID = eo.playGame(randomnum)
-
                 print("GAME ID: ",gameID)
                 print(eo.getTimer("g"))
             except Exception as e:
                 traceback.print_exc()
                 print(e)
                 warningMsg(e)
-            else:
-                #put code ng game here
-                print()
 
         def open_countdown():
             try:
