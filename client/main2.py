@@ -75,13 +75,6 @@ class MainMenu(tk.Frame):
         #wordyLabel = tk.Label(self, text="WORDY", bg='green')
         wordyLabel = tk.Label(self, text="WORDY")
         #TODO HOW TO ACTUALLY CENTER THIS FKN LABEL
-        print(self.winfo_width())
-        print(self.winfo_height())
-        print(parent.winfo_width())
-        print(parent.winfo_height())
-        print(self.winfo_width())
-        print(self.winfo_screenwidth())
-        print(self.winfo_screenheight())
         wordyLabel.place(x=170,y=50,anchor="center")
         #wordyLabel.configure(anchor="center")
 
@@ -104,6 +97,7 @@ class MainMenu(tk.Frame):
 
                 #random user id cuz idk
                 randomnum = random.randint(1000, 9999)
+                global gameID
                 gameID = eo.playGame(randomnum)
 
                 print("GAME ID: ",gameID)
@@ -115,6 +109,8 @@ class MainMenu(tk.Frame):
             else:
                 #put code ng game here
                 print("INGAME")
+
+                controller.show_frame(Game)
 
         def open_countdown():
             try:
@@ -140,8 +136,6 @@ class MainMenu(tk.Frame):
                 print(e)
                 warningMsg(e)
 
-
-
             # Create a Label in New
             #todo retrieve timer from server, countdowm, countdown will close after finishing timer, and will either go to main menu or game
             #Label(new, text="Hey, Howdy?", font=('Helvetica 17 bold')).pack(pady=30)
@@ -154,14 +148,98 @@ class MainMenu(tk.Frame):
 class Game(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-
+        self.letter1 = tk.Label(self, fg="#333333", justify="center")
+        self.letter2 = tk.Label(self, fg="#333333", justify="center")
+        self.letter3 = tk.Label(self, fg="#333333", justify="center")
+        self.letter4 = tk.Label(self, fg="#333333", justify="center")
+        self.letter5 = tk.Label(self, fg="#333333", justify="center")
+        self.letter6 = tk.Label(self, fg="#333333", justify="center")
+        self.letter7 = tk.Label(self, fg="#333333", justify="center")
+        self.letter8 = tk.Label(self, fg="#333333", justify="center")
+        self.letter9 = tk.Label(self, fg="#333333", justify="center")
+        self.letter10 = tk.Label(self, fg="#333333", justify="center")
+        self.letter11 = tk.Label(self, fg="#333333", justify="center")
+        self.letter12 = tk.Label(self, fg="#333333", justify="center")
+        self.letter13 = tk.Label(self, fg="#333333", justify="center")
+        self.letter14 = tk.Label(self, fg="#333333", justify="center")
+        self.letter15 = tk.Label(self, fg="#333333", justify="center")
+        self.letter16 = tk.Label(self, fg="#333333", justify="center")
+        self.letter17 = tk.Label(self, fg="#333333", justify="center")
         Label = tk.Label(self, text="Game")
         Label.place(x=230, y=230)
 
-        Button = tk.Button(self, text="next", command=lambda: controller.show_frame(LogIn))
-        #Button = tk.Button(self, text="next", command=open_countdown)
+#test
+        global gameID
+        print(gameID)
+        #super lag
+        Button = tk.Button(self, text="test", command=lambda: update_label_texts(self, eo.requestLetters(gameID)))
+
         Button.place(x=230, y=300)
 
+        roundLabel=tk.Label(self)
+        #GLabel_979["font"] = Font
+        roundLabel["fg"] = "#333333"
+        roundLabel["justify"] = "center"
+        roundLabel["text"] = "ROUND: "
+        roundLabel.place(x=10,y=120,width=70,height=25)
+
+        self.letter1["text"] = "1"
+        self.letter1.place(x=120,y=70,width=30,height=30)
+
+        self.letter2["text"] = "2"
+        self.letter2.place(x=160,y=70,width=30,height=30)
+
+        self.letter3["text"] = "3"
+        self.letter3.place(x=200, y=70, width=30, height=30)
+
+        self.letter4["text"] = "4"
+        self.letter4.place(x=240, y=70, width=30, height=30)
+
+        self.letter5["text"] = "2"
+        self.letter5.place(x=280, y=70, width=30, height=30)
+
+        self.letter6["text"] = "2"
+        self.letter6.place(x=120, y=120, width=30, height=30)
+
+        self.letter7["text"] = "2"
+        self.letter7.place(x=160, y=120, width=30, height=30)
+
+        self.letter8["text"] = "2"
+        self.letter8.place(x=200, y=120, width=30, height=30)
+
+        self.letter9["text"] = "2"
+        self.letter9.place(x=240, y=120, width=30, height=30)
+
+        self.letter10["text"] = "2"
+        self.letter10.place(x=280, y=120, width=30, height=30)
+
+        self.letter11["text"] = "2"
+        self.letter11.place(x=120, y=160, width=30, height=30)
+
+        self.letter12["text"] = "2"
+        self.letter12.place(x=160, y=160, width=30, height=30)
+
+        self.letter13["text"] = "2"
+        self.letter13.place(x=200, y=160, width=30, height=30)
+
+        self.letter14["text"] = "2"
+        self.letter14.place(x=240, y=160, width=30, height=30)
+
+        self.letter15["text"] = "2"
+        self.letter15.place(x=280, y=160, width=30, height=30)
+
+        self.letter16["text"] = "2"
+        self.letter16.place(x=120, y=200, width=30, height=30)
+
+        self.letter17["text"] = "2"
+        self.letter17.place(x=160, y=200, width=30, height=30)
+
+
+
+        def update_label_texts(self, char_array):
+            label_texts = [getattr(self, f"letter{i}") for i in range(1, 18)]
+            for i in range(len(char_array)):
+                label_texts[i].configure(text=char_array[i])
 
 class Application(tk.Tk):
     def __init__(self, *args, **kwargs):
@@ -185,6 +263,7 @@ class Application(tk.Tk):
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew")
 
+                                                                    #TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! WIP AS FUUUUCK
         self.show_frame(LogIn)
 
     def show_frame(self, page):
