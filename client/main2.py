@@ -104,9 +104,6 @@ class MainMenu(tk.Frame):
                 # random user id cuz idk
                 randomnum = random.randint(1000, 9999)
                 gameID = eo.playGame(randomnum)
-                setGameID(gameID)
-
-                print("GAME ID: ", gameID)
                 print(eo.getTimer("g"))
             except Exception as e:
                 traceback.print_exc()
@@ -115,7 +112,8 @@ class MainMenu(tk.Frame):
             else:
                 # put code ng game here
                 print("INGAME")
-
+                setGameID(gameID)
+                print("GAME ID: ", gameID)
                 controller.show_frame(Game)
 
         def open_countdown():
@@ -155,6 +153,13 @@ class Game(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         global gameID
+
+        self.textWordy = tk.Label(self, fg="#333333", justify="center", text="ASDASDASDASD")
+        self.textWordy.place(x=130, y=280)
+
+        self.bind("<Key>", self.handle_key)
+        # Set the focus on the frame to capture the key events
+        self.focus_set()
 
         # INDIVIDUAL LETTERS
         self.letter1 = tk.Label(self, fg="#333333", justify="center", text="1")
@@ -209,24 +214,32 @@ class Game(tk.Frame):
         self.gameIDLabel = tk.Label(self, fg="#333333", justify="left", text="GAME ID: " + str(gameID))
         self.gameIDLabel.place(x=10, y=10, width=70, height=25)
 
-        self.wordTextField = tk.Entry(self, width=25, bd=1)
-        self.wordTextField.place(x=130, y=280)
+        #self.wordTextField = tk.Entry(self, width=25, bd=1)
+        #self.wordTextField.place(x=130, y=280)
 
         # super lag, will change command, for the sake of testing lang yung update_label_Texts
-        self.readyBTN = tk.Button(self, text="READY", command=lambda: update_label_texts(self, eo.requestLetters(
-            gameID)))  # test lang, will change
+        self.readyBTN = tk.Button(self, text="READY", command=lambda: update_label_texts(self, eo.requestLetters(gameID)))  # test lang, will change
         self.readyBTN.place(x=30, y=300)
-
-        # test
-        print(gameID)
 
         def update_label_texts(self, char_array):
             label_texts = [getattr(self, f"letter{i}") for i in range(1, 18)]
             for i in range(len(char_array)):
                 label_texts[i].configure(text=char_array[i])
+        # test
+        print(gameID)
 
-        def updTimer(self):
-            print()
+    def handle_key(self, event):
+        if event.keysym == "Return":
+            self.textWordy.config(text="")
+        elif event.keysym == "BackSpace":
+            current_text = self.textWordy.cget("text")
+            self.textWordy.config(text=current_text[:-1])
+        else:
+            current_text = self.textWordy.cget("text")
+            self.textWordy.config(text=current_text + event.char)
+
+    def updTimer(self):
+        print()
 
 
 class Application(tk.Tk):
