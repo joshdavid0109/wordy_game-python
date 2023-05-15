@@ -114,16 +114,20 @@ class MainMenu(tk.Frame):
                 gameID = eo.playGame(int(userID))
                 print(eo.getTimer("g"))
             except Exception as e:
-                traceback.print_exc()
                 print(e)
+                print("returning to main menu...")
                 warningMsg(e)
             else:
                 # put code ng game here
-                print("INGAME")
-                setGameID(gameID)
-                print("GAME ID: ", gameID)
-                controller.show_frame(Game)
-                controller.frames[Game].focus_set()
+                if gameID != 0:
+                    print("INGAME")
+                    setGameID(gameID)
+                    print("xxGAME ID: ", gameID)
+                    controller.show_frame(Game)
+                    controller.frames[Game].focus_set()
+                else:
+                    messagebox.showwarning("sad :(", "no other players have joined the game\nreturning to menu")
+
 
         def open_countdown():
             try:
@@ -138,7 +142,20 @@ class MainMenu(tk.Frame):
                 timerStart = eo.getTimer("g")
 
                 def close_window():
+                    print("window closed")
                     new.destroy()
+
+                def countToZero(count):
+                    timer_label.config(text=str(count))
+                    if count > 0:
+                        new.after(1000, lambda: countToZero(count - 1))
+                    else:
+                        close_window()
+
+                timer_label = Label(new, text=str(timerStart), font=Font)
+                timer_label.pack()
+
+                new.after(1000, lambda: countToZero(timerStart))
 
                 print(timerStart)
                 timer = threading.Timer(timerStart, close_window)
@@ -284,7 +301,8 @@ class Game(tk.Frame):
 
     def roundTimer(self):
         roundTimer = eo.getTimer("round")
-        print("rount timer has started")
+        print()
+        print("ROUND TIMER AY NAGSTART NA BALIW")
         print("ROUND TMR START AT" + str(roundTimer))
 
         while roundTimer > 0:
@@ -312,7 +330,7 @@ class Game(tk.Frame):
             timer_value = eo.getTimer("r")
             time.sleep(1)
 
-        print("ready timer finish")
+        print("READY TIMER FINISH, ROUND SHOULD START NA")
         self.roundTimer()
         self.update_label_texts(self.letters)
         self.availableLetters = self.letters.copy()
