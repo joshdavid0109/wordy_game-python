@@ -287,12 +287,14 @@ class Game(tk.Frame):
         print("rount timer has started")
         print("ROUND TMR START AT" + str(roundTimer))
 
-        for i in range(roundTimer):
-            print("Timer: " + str(roundTimer - i))
+        while roundTimer > 0:
+            print("READY COUNTER: " + str(roundTimer))
+            roundTimer = eo.getTimer("ready")
             time.sleep(1)
 
-        print("The round is over!")
+        print("ROUND IS OVER!!")
         self.readyBTN.config(state="normal")
+        print("PRESS READY!!")
 
     def timer(self):
         print("PRE ROUND COUNTDOWN STARTED")
@@ -303,17 +305,18 @@ class Game(tk.Frame):
 
         print("PRE ROUND COUNTDOWN VALUE START: ", str(timer_value))
         print("LETTERS THIS ROUND: " + str(self.letters))
+        time.sleep(0.1)  # not sure if necessary, 0 kasi una nareretrieve na value
 
         while timer_value > 0:
-            time.sleep(0.1)#not sure if necessary, 0 kasi una nareretrieve na value
             print("READY COUNTER: " + str(timer_value))
             timer_value = eo.getTimer("r")
             time.sleep(1)
 
         print("ready timer finish")
+        self.roundTimer()
         self.update_label_texts(self.letters)
         self.availableLetters = self.letters.copy()
-        self.roundTimer()
+
 
         # else:
         # timer_object = threading.Timer(timer_value, self.timer)
