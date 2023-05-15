@@ -268,6 +268,7 @@ class Game(tk.Frame):
             label_texts[i].configure(text=char_array[i])
 
     def ready(self):
+        print("READY BUTTON CLICKED")
         self.readyBTN.config(state="disabled")
 
         startCountdown = threading.Thread(target=self.timer())
@@ -284,22 +285,22 @@ class Game(tk.Frame):
 
     def roundTimer(self):
         time.sleep(0.1)
-        print("roundTIMER STARTED")
         roundTimer = eo.getTimer("round")
+        print("rount timer has started")
         print("ROUND TMR " + str(roundTimer))
         print(roundTimer)
 
-        if roundTimer == 0:
-            print("U SHOULD SEE THIS ROUND IS OVER OK!")
-            self.readyBTN.config(state="normal")
+        while roundTimer > 0:
+            print("Timer: " + str(roundTimer))
+            time.sleep(1)
+            #roundTimer -= 1
+            print(eo.getTimer("round"))
 
-        else:
-            print("ELSE")
-            timer_object_round = threading.Timer(roundTimer, self.roundTimer)
-            timer_object_round.start()
+        print("The round is over!")
+        self.readyBTN.config(state="normal")
 
     def timer(self):
-        print("TIMERWORK")
+        print("PRE ROUND COUNTDOWN STARTED")
         global gameID, timer_value
         self.letters = list(eo.requestLetters(int(gameID)))
         print(self.letters)
