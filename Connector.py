@@ -1,4 +1,6 @@
 import sys
+import traceback
+
 from omniORB import CORBA
 import WordyGame
 
@@ -24,9 +26,5 @@ class daConnector:
             eo = obj._narrow(WordyGame.WordyGameServer)
             print("CONNECTED:)")
         except Exception as e:
-            print("AAerror "+e)
-
-
-def getEo():
-    global eo
-    return eo
+            traceback.print_exc()
+            print(e)

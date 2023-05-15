@@ -20,7 +20,7 @@ Font = ("Comic Sans MS", 15, "bold")
 connector = daConnector("localhost", 9999)  # should be read sa config
 connector.connect()
 
-eo = Connector.getEo()
+eo = Connector.eo
 gameID = None
 userID = None
 timer_value = None
@@ -53,14 +53,15 @@ class LogIn(tk.Frame):
         passwordTextField.place(x=120, y=50)
 
         def verify():
+            global userID
             userId = userIdTextField.get()
             password = passwordTextField.get()
             try:
                 eo.login(userId, password)
             except Exception as e:
                 print(e)
-                global userID
-                userID = userId  # TODO COMMENT OUT THIS LINE THIS IS FOR THE SAKE OF TESTING LANG !!
+                traceback.print_exc()
+                userID = userId# TODO COMMENT OUT THIS LINE THIS IS FOR THE SAKE OF TESTING LANG !!
                 userIdTextField.delete(0, "end")
                 passwordTextField.delete(0, "end")
                 messagebox.showwarning("ERROR", str(e.args[0]))
@@ -68,8 +69,11 @@ class LogIn(tk.Frame):
                 controller.show_frame(MainMenu)  # TODO COMMENT OUT THIS LINE THIS IS FOR THE SAKE OF TESTING LANG !!
                 controller.frames[Game].focus_set()
             else:
-                print("log in OK:) ! welcome " + userId + "! ")
+                print("log in OK:) ! welcome " + str(userId) + "! ")
+                global userID
+                userID = userId
                 controller.show_frame(MainMenu)
+                controller.frames[Game].focus_set()
 
         logInButton = tk.Button(self, text="ENTER", command=verify)
         # logInButton = tk.Button(self, text="ENTER", command=lambda: controller.show_frame(MainMenu))
@@ -90,7 +94,6 @@ class MainMenu(tk.Frame):
 
         # wordyLabel = tk.Label(self, text="WORDY", bg='green')
         wordyLabel = tk.Label(self, text="WORDY")
-        # TODO HOW TO ACTUALLY CENTER THIS FKN LABEL
         wordyLabel.place(x=170, y=50, anchor="center")
 
         # wordyLabel.configure(anchor="center")
@@ -103,17 +106,12 @@ class MainMenu(tk.Frame):
                 traceback.print_exc()
                 print(str(e.args[0]))
 
-        def play_game():
-            print("exec a")
-            eo.playGame(69)
-
         def playGame():
             try:
                 print("exec a")
-
-                # random user id cuz idk
-                randomnum = random.randint(1000, 9999)
-                gameID = eo.playGame(randomnum)
+                global userID
+                print("USER ID: ", userID)
+                gameID = eo.playGame(int(userID))
                 print(eo.getTimer("g"))
             except Exception as e:
                 traceback.print_exc()
