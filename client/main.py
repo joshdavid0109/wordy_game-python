@@ -109,7 +109,7 @@ class MainMenu(tk.Frame):
         def playGame():
             try:
                 print("exec a")
-                global userID
+                global userID, gameID
                 print("USER ID: ", userID)
                 gameID = eo.playGame(int(userID))
                 print(eo.getTimer("g"))
@@ -303,22 +303,25 @@ class Game(tk.Frame):
         print("PRE ROUND COUNTDOWN STARTED")
         global gameID, timer_value
         self.letters = list(eo.requestLetters(int(gameID)))
-        print(self.letters)
-        time.sleep(0.1)
         timer_value = eo.getTimer("r")
         self.timerLabel.config(text=str(timer_value))
 
-        print("ASDASD", str(timer_value))
+        print("PRE ROUND COUNTDOWN VALUE START: ", str(timer_value))
+        print("LETTERS THIS ROUND: "+str(self.letters))
 
-        if timer_value == 0:
-            print("xxxxx" + str(self.letters))
-            self.update_label_texts(self.letters)
-            self.availableLetters = self.letters.copy()
-            self.roundTimer()
+        while timer_value>=0:
+            print("READY COUNTER: "+str(timer_value))
+            timer_value = eo.getTimer("r")
+            time.sleep(1)
 
-        else:
-            timer_object = threading.Timer(timer_value, self.timer)
-            timer_object.start()
+        print("ready timer finish")
+        self.update_label_texts(self.letters)
+        self.availableLetters = self.letters.copy()
+        self.roundTimer()
+
+        #else:
+            #timer_object = threading.Timer(timer_value, self.timer)
+            #timer_object.start()
 
 
     def addRound(self):
