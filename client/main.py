@@ -81,20 +81,13 @@ class LogIn(tk.Frame):
 
 
 class MainMenu(tk.Frame):
+
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
 
-        # hindi gumagana kapag 2022-2_9328-fingrp7_others/res/bookCover.jpg lang nilagay ko :( replace with absolute file path nalang
-        image = Image.open("C:/Users/ADMIN/PycharmProjects/2022-2_9328-fingrp7_others/res/bookCover.jpg")
-        photo = ImageTk.PhotoImage(image)
-
-        background = tk.Label(self, image=photo)
-        background.image = photo
-        background.place(relx=0, rely=0, relwidth=1, relheight=1)
-
         # wordyLabel = tk.Label(self, text="WORDY", bg='green')
-        wordyLabel = tk.Label(self, text="WORDY")
-        wordyLabel.place(x=170, y=50, anchor="center")
+        self.wordyLabel = tk.Label(self, text="WORDY", font=("Impact", 56))
+        self.wordyLabel.place(x=170, y=50, anchor="center")
 
         # wordyLabel.configure(anchor="center")
 
@@ -128,9 +121,9 @@ class MainMenu(tk.Frame):
                 else:
                     messagebox.showwarning("sad :(", "no other players have joined the game\nreturning to menu")
 
-
         def open_countdown():
             try:
+                self.playGameBTN.config(state="disabled")
                 print("exec b")
                 new = Toplevel(self)
                 new.geometry("350x150")
@@ -142,17 +135,18 @@ class MainMenu(tk.Frame):
                 timerStart = eo.getTimer("g")
 
                 def close_window():
+                    self.playGameBTN.config(state="normal")
                     print("window closed")
                     new.destroy()
 
                 def countToZero(count):
-                    timer_label.config(text=str(count))
+                    timer_label.config(text=str(count - 1))  # for some reason delayed yung first countdown kaya -1
                     if count > 0:
                         new.after(1000, lambda: countToZero(count - 1))
                     else:
                         close_window()
 
-                timer_label = Label(new, text=str(timerStart), font=Font)
+                timer_label = Label(new, text=str(timerStart), font=("Arial", 54, "bold"))
                 timer_label.pack()
 
                 new.after(1000, lambda: countToZero(timerStart))
@@ -166,10 +160,20 @@ class MainMenu(tk.Frame):
                 print(e)
                 warningMsg(e)
 
-        # playGameBTN = tk.Button(self, text="PLAY GAME", command=lambda: controller.show_frame(Game), font=Font)
-        playGameBTN = tk.Button(self, text="PLAY GAME", command=playGameButton, font=Font)
-        playGameBTN.place(x=170, y=150, anchor='center')
+        def showTopP():
+            print("top p")
 
+        def showTopW():
+            print("top w")
+
+        self.playGameBTN = tk.Button(self, text="PLAY GAME", command=playGameButton, font=("Helvetica", 20))
+        self.playGameBTN.place(x=170, y=190, anchor='center')
+
+        self.topPlayersBTN = tk.Button(self, text="TOP PLAYERS", command=showTopP, font=("Helvetica", 10))
+        self.topPlayersBTN.place(x=10, y=270, anchor='w')
+
+        self.topWordsBTN = tk.Button(self, text="TOP WORDS", command=showTopW, font=("Helvetica", 10))
+        self.topWordsBTN.place(x=10, y=310, anchor='w')
 
 class Game(tk.Frame):
     def __init__(self, parent, controller):
@@ -299,14 +303,13 @@ class Game(tk.Frame):
 
         round_counter = lambda: self.addRound()
 
-    #sa round itself
+    # sa round itself
     def roundTimer(self):
 
         def after():
             print("ROUND IS OVER!!")
             self.readyBTN.config(state="normal")
             print("PRESS READY!!")
-
 
         self.readyBTN.config(state="disabled")
         roundTimer = eo.getTimer("round")
@@ -316,14 +319,12 @@ class Game(tk.Frame):
         timer = threading.Timer(roundTimer, after)
         timer.start()
 
-        #while roundTimer > 0:
-            #print("ROUND TIMER COUNTER: " + str(roundTimer))
-            #roundTimer = eo.getTimer("round")
-            #time.sleep(1)
+        # while roundTimer > 0:
+        # print("ROUND TIMER COUNTER: " + str(roundTimer))
+        # roundTimer = eo.getTimer("round")
+        # time.sleep(1)
 
-
-
-    #before round
+    # before round
     def timer(self):
         self.readyBTN.config(state="disabled")
         print("PRE ROUND COUNTDOWN STARTED")
@@ -346,7 +347,6 @@ class Game(tk.Frame):
         self.update_label_texts(self.letters)
         self.availableLetters = self.letters.copy()
 
-
         # else:
         # timer_object = threading.Timer(timer_value, self.timer)
         # timer_object.start()
@@ -368,7 +368,7 @@ class Application(tk.Tk):
 
         window = tk.Frame(self)
         window.pack()
-        window.pack_propagate(0)
+        window.pack_propagate(False)
 
         Font_tuple = ("Comic Sans MS", 20, "bold")
 
@@ -382,6 +382,7 @@ class Application(tk.Tk):
         for F in (LogIn, MainMenu, Game):
             frame = F(window, self)
             self.frames[F] = frame
+            self.title("WORDY - GROUP 7 :D")
             frame.grid(row=0, column=0, sticky="nsew")
 
         # self.show_frame(Game)
