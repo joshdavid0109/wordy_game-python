@@ -61,7 +61,7 @@ class LogIn(tk.Frame):
             except Exception as e:
                 print(e)
                 traceback.print_exc()
-                userID = userId# TODO COMMENT OUT THIS LINE THIS IS FOR THE SAKE OF TESTING LANG !!
+                userID = userId  # TODO COMMENT OUT THIS LINE THIS IS FOR THE SAKE OF TESTING LANG !!
                 userIdTextField.delete(0, "end")
                 passwordTextField.delete(0, "end")
                 messagebox.showwarning("ERROR", str(e.args[0]))
@@ -271,30 +271,25 @@ class Game(tk.Frame):
         print("READY BUTTON CLICKED")
         self.readyBTN.config(state="disabled")
 
-        startCountdown = threading.Thread(target=self.timer())
-
-        print("X", userID)
-        print("V", gameID)
+        print("USER ID: ", userID)
+        print("GAME ID: ", gameID)
 
         print(eo.ready(int(userID), int(gameID)))
-        startCountdown.start()
+
+        self.timer()
         # result = lambda: eo.check_winner(gameID)
         # executor_service.submit(result)
 
         round_counter = lambda: self.addRound()
 
     def roundTimer(self):
-        time.sleep(0.1)
         roundTimer = eo.getTimer("round")
         print("rount timer has started")
-        print("ROUND TMR " + str(roundTimer))
-        print(roundTimer)
+        print("ROUND TMR START AT" + str(roundTimer))
 
-        while roundTimer > 0:
-            print("Timer: " + str(roundTimer))
+        for i in range(roundTimer):
+            print("Timer: " + str(roundTimer - i))
             time.sleep(1)
-            #roundTimer -= 1
-            print(eo.getTimer("round"))
 
         print("The round is over!")
         self.readyBTN.config(state="normal")
@@ -307,10 +302,11 @@ class Game(tk.Frame):
         self.timerLabel.config(text=str(timer_value))
 
         print("PRE ROUND COUNTDOWN VALUE START: ", str(timer_value))
-        print("LETTERS THIS ROUND: "+str(self.letters))
+        print("LETTERS THIS ROUND: " + str(self.letters))
 
-        while timer_value>=0:
-            print("READY COUNTER: "+str(timer_value))
+        while timer_value > 0:
+            time.sleep(0.1)#not sure if necessary, 0 kasi una nareretrieve na value
+            print("READY COUNTER: " + str(timer_value))
             timer_value = eo.getTimer("r")
             time.sleep(1)
 
@@ -319,10 +315,9 @@ class Game(tk.Frame):
         self.availableLetters = self.letters.copy()
         self.roundTimer()
 
-        #else:
-            #timer_object = threading.Timer(timer_value, self.timer)
-            #timer_object.start()
-
+        # else:
+        # timer_object = threading.Timer(timer_value, self.timer)
+        # timer_object.start()
 
     def addRound(self):
         self.roundNum += 1
