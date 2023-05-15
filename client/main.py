@@ -299,22 +299,33 @@ class Game(tk.Frame):
 
         round_counter = lambda: self.addRound()
 
+    #sa round itself
     def roundTimer(self):
+
+        def after():
+            print("ROUND IS OVER!!")
+            self.readyBTN.config(state="normal")
+            print("PRESS READY!!")
+
+
+        self.readyBTN.config(state="disabled")
         roundTimer = eo.getTimer("round")
         print()
-        print("ROUND TIMER AY NAGSTART NA BALIW")
-        print("ROUND TMR START AT" + str(roundTimer))
+        print("ROUND TIMER START AT: " + str(roundTimer))
 
-        while roundTimer > 0:
-            print("READY COUNTER: " + str(roundTimer))
-            roundTimer = eo.getTimer("ready")
-            time.sleep(1)
+        timer = threading.Timer(roundTimer, after)
+        timer.start()
 
-        print("ROUND IS OVER!!")
-        self.readyBTN.config(state="normal")
-        print("PRESS READY!!")
+        #while roundTimer > 0:
+            #print("ROUND TIMER COUNTER: " + str(roundTimer))
+            #roundTimer = eo.getTimer("round")
+            #time.sleep(1)
 
+
+
+    #before round
     def timer(self):
+        self.readyBTN.config(state="disabled")
         print("PRE ROUND COUNTDOWN STARTED")
         global gameID, timer_value
         self.letters = list(eo.requestLetters(int(gameID)))
