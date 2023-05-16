@@ -23,7 +23,7 @@ FontLetterz = ("Helvetica", 12, "bold")
 connector = daConnector("localhost", 9999)  # should be read sa config
 connector.connect()
 
-eo = Connector.eo
+wordyGame = Connector.eo
 gameID = None
 userID = None
 timer_value = None
@@ -60,7 +60,7 @@ class LogIn(tk.Frame):
             userId = userIdTextField.get()
             password = passwordTextField.get()
             try:
-                eo.login(userId, password)
+                wordyGame.login(userId, password)
             except Exception as e:
                 print(e)
                 traceback.print_exc()
@@ -107,8 +107,8 @@ class MainMenu(tk.Frame):
                 print("exec a")
                 global userID, gameID
                 print("USER ID: ", userID)
-                gameID = eo.playGame(int(userID))
-                print(eo.getTimer("g"))
+                gameID = wordyGame.playGame(int(userID))
+                print(wordyGame.getTimer("g"))
             except Exception as e:
                 print(e)
                 print("returning to main menu...")
@@ -135,7 +135,7 @@ class MainMenu(tk.Frame):
                 # WAIT MUNA <1 SECOND KASI 0 MAKUKUHA NA ANO NUN TIMER PAG FIRST TYM HEHEH
                 time.sleep(0.1)
 
-                timerStart = eo.getTimer("g")
+                timerStart = wordyGame.getTimer("g")
 
                 def close_window():
                     self.playGameBTN.config(state="normal")
@@ -263,7 +263,7 @@ class Game(tk.Frame):
     def checkRounds(self):
         if gameID != 0 or not None:
             print("ROUND:" + str(self.roundNum)+" OF GAME: "+str(gameID))
-            self.roundNum = eo.getRound(gameID)
+            self.roundNum = wordyGame.getRound(gameID)
             self.roundNumLab.config(text=str(self.roundNum))
 
     def handle_key(self, event):
@@ -275,7 +275,7 @@ class Game(tk.Frame):
                 print("WORD SENT  : ", entered_word)
                 self.textWordy.config(text="")
                 self.availableLetters = self.letters.copy()
-                eo.checkWord(entered_word, int(gameID), int(userID))
+                wordyGame.checkWord(entered_word, int(gameID), int(userID))
             except Exception as e:
                 print(str(e.args[0]))
             else:
@@ -302,7 +302,7 @@ class Game(tk.Frame):
 
     def ready(self):
         print("READY BUTTON CLICKED")
-        self.roundNum = eo.getRound(gameID)
+        self.roundNum = wordyGame.getRound(gameID)
 
         print("STARTING - ROUND: "+str(self.roundNum)+" OF GAME: "+str(gameID))
 
@@ -311,7 +311,7 @@ class Game(tk.Frame):
         print("USER ID: ", userID)
         print("GAME ID: ", gameID)
 
-        print(eo.ready(int(userID), int(gameID)))
+        print(wordyGame.ready(int(userID), int(gameID)))
 
         self.timer()
         # result = lambda: eo.check_winner(gameID)
@@ -331,7 +331,7 @@ class Game(tk.Frame):
             print("PRESS READY!!")
 
         self.readyBTN.config(state="disabled")
-        roundTimer = eo.getTimer("round")
+        roundTimer = wordyGame.getTimer("round")
         print()
         print("ROUND TIMER START AT: " + str(roundTimer))
 
@@ -348,18 +348,23 @@ class Game(tk.Frame):
         self.readyBTN.config(state="disabled")
         print("PRE ROUND COUNTDOWN STARTED")
         global gameID, timer_value
-        self.letters = list(eo.requestLetters(int(gameID)))
-        timer_value = eo.getTimer("r")
+        self.letters = list(wordyGame.requestLetters(int(gameID)))
+        timer_value = wordyGame.getTimer("r")
         self.timerLabel.config(text=str(timer_value))
 
         print("PRE ROUND COUNTDOWN VALUE START: ", str(timer_value))
         print("LETTERS THIS ROUND: " + str(self.letters))
         time.sleep(0.1)  # not sure if necessary, 0 kasi una nareretrieve na value
 
-        while timer_value > 0:
-            print("READY COUNTER: " + str(timer_value))
-            timer_value = eo.getTimer("r")
-            time.sleep(1)
+        def updateReadyTimer():
+            while timer_value >= 0:
+                readytimervaltemp = wordyGame.getTimer("r")
+                self.timerLabel.config(text=str(readytimervaltemp))
+                print(readytimervaltemp)
+                time.sleep(1)
+
+        update_thread = threading.Thread(target=updateReadyTimer())
+        update_thread.start()
 
         print("READY TIMER FINISH, ROUND START NA")
         self.checkRounds()
