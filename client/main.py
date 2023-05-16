@@ -17,7 +17,8 @@ from Connector import daConnector
 
 Font = ("Comic Sans MS", 15, "bold")
 
-connector = daConnector("localhost", 9999)  # should be read sa config
+connector = daConnector("10.10.105.213", 9999)  # should be read sa config
+#connector = daConnector("localhost", 9999)  # should be read sa config
 connector.connect()
 
 eo = Connector.eo
@@ -179,6 +180,7 @@ class Game(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         global gameID
+    #threading.Thread(target=playGame).start()
 
         self.textWordy = tk.Label(self, fg="#333333", justify="center", text="", font=Font)
         self.textWordy.place(x=130, y=280)
@@ -228,8 +230,8 @@ class Game(tk.Frame):
         # OTHER LABELS N STUFF
         self.roundLabel = tk.Label(self, fg="#333333", justify="left", text="ROUND: ")
         self.roundLabel.place(x=10, y=110, width=70, height=25)
-        self.roundNum = tk.Label(self, fg="#333333", justify="left", text="0")
-        self.roundNum.place(x=70, y=110, width=30, height=25)
+        self.roundNumLab = tk.Label(self, fg="#333333", justify="left", text="0")
+        self.roundNumLab.place(x=70, y=110, width=30, height=25)
 
         self.winsLabel = tk.Label(self, fg="#333333", justify="left", text="WINS: ")
         self.winsLabel.place(x=10, y=150, width=70, height=25)
@@ -253,6 +255,15 @@ class Game(tk.Frame):
         self.letters = []
 
         self.availableLetters = []
+
+        #threading.Thread(target=self.checkRounds).start()
+
+    def checkRounds(self):
+        if gameID != 0 or not None:
+            print("ROUND:" + str(self.roundNum)+" OF GAME: "+str(gameID))
+            self.roundNumLab = eo.getRound(gameID)
+            #self.roundNumLab.config(text=str(self.roundNum))
+
 
     def handle_key(self, event):
         # print(self.letters)
@@ -289,6 +300,9 @@ class Game(tk.Frame):
             label_texts[i].configure(text=char_array[i])
 
     def ready(self):
+        if roundNum == 0:
+            threading.Thread(target=self.checkRounds).start()
+            print("round counter thread")
         print("READY BUTTON CLICKED")
         self.readyBTN.config(state="disabled")
 
@@ -308,6 +322,9 @@ class Game(tk.Frame):
 
         def after():
             print("ROUND IS OVER!!")
+
+            self.checkRounds()
+
             self.readyBTN.config(state="normal")
             print("PRESS READY!!")
 
