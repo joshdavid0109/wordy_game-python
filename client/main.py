@@ -16,11 +16,13 @@ import WordyGame
 from Connector import daConnector
 
 Font = ("Comic Sans MS", 15, "bold")
+FontLetters = ("Courier", 13, "bold")
 
-connector = daConnector("localhost", 9999)  # should be read sa config
+connector = daConnector("192.168.219.133", 9999)  # should be read sa config
+#connector = daConnector("localhost", 9999)  # should be read sa config
 connector.connect()
 
-eo = Connector.getEo()
+eo = Connector.eo
 gameID = None
 userID = None
 timer_value = None
@@ -53,13 +55,14 @@ class LogIn(tk.Frame):
         passwordTextField.place(x=120, y=50)
 
         def verify():
+            global userID
             userId = userIdTextField.get()
             password = passwordTextField.get()
             try:
                 eo.login(userId, password)
             except Exception as e:
                 print(e)
-                global userID
+                traceback.print_exc()
                 userID = userId  # TODO COMMENT OUT THIS LINE THIS IS FOR THE SAKE OF TESTING LANG !!
                 userIdTextField.delete(0, "end")
                 passwordTextField.delete(0, "end")
@@ -68,8 +71,11 @@ class LogIn(tk.Frame):
                 controller.show_frame(MainMenu)  # TODO COMMENT OUT THIS LINE THIS IS FOR THE SAKE OF TESTING LANG !!
                 controller.frames[Game].focus_set()
             else:
-                print("log in OK:) ! welcome " + userId + "! ")
+                print("log in OK:) ! welcome " + str(userId) + "! ")
+                global userID
+                userID = userId
                 controller.show_frame(MainMenu)
+                controller.frames[Game].focus_set()
 
         logInButton = tk.Button(self, text="ENTER", command=verify)
         # logInButton = tk.Button(self, text="ENTER", command=lambda: controller.show_frame(MainMenu))
@@ -77,21 +83,13 @@ class LogIn(tk.Frame):
 
 
 class MainMenu(tk.Frame):
+
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
 
-        # hindi gumagana kapag 2022-2_9328-fingrp7_others/res/bookCover.jpg lang nilagay ko :( replace with absolute file path nalang
-        image = Image.open("C:/Users/joshdavid0109/PycharmProjects/2022-2_9328-fingrp7_other/res/bookCover.jpg")
-        photo = ImageTk.PhotoImage(image)
-
-        background = tk.Label(self, image=photo)
-        background.image = photo
-        background.place(relx=0, rely=0, relwidth=1, relheight=1)
-
         # wordyLabel = tk.Label(self, text="WORDY", bg='green')
-        wordyLabel = tk.Label(self, text="WORDY")
-        # TODO HOW TO ACTUALLY CENTER THIS FKN LABEL
-        wordyLabel.place(x=170, y=50, anchor="center")
+        self.wordyLabel = tk.Label(self, text="WORDY", font=("Impact", 56))
+        self.wordyLabel.place(x=170, y=50, anchor="center")
 
         # wordyLabel.configure(anchor="center")
 
@@ -103,32 +101,31 @@ class MainMenu(tk.Frame):
                 traceback.print_exc()
                 print(str(e.args[0]))
 
-        def play_game():
-            print("exec a")
-            eo.playGame(69)
-
         def playGame():
             try:
                 print("exec a")
-
-                # random user id cuz idk
-                randomnum = random.randint(1000, 9999)
-                gameID = eo.playGame(randomnum)
+                global userID, gameID
+                print("USER ID: ", userID)
+                gameID = eo.playGame(int(userID))
                 print(eo.getTimer("g"))
             except Exception as e:
-                traceback.print_exc()
                 print(e)
+                print("returning to main menu...")
                 warningMsg(e)
             else:
                 # put code ng game here
-                print("INGAME")
-                setGameID(gameID)
-                print("GAME ID: ", gameID)
-                controller.show_frame(Game)
-                controller.frames[Game].focus_set()
+                if gameID != 0:
+                    print("INGAME")
+                    setGameID(gameID)
+                    print("xxGAME ID: ", gameID)
+                    controller.show_frame(Game)
+                    controller.frames[Game].focus_set()
+                else:
+                    messagebox.showwarning("sad :(", "no other players have joined the game\nreturning to menu")
 
         def open_countdown():
             try:
+                self.playGameBTN.config(state="disabled")
                 print("exec b")
                 new = Toplevel(self)
                 new.geometry("350x150")
@@ -140,7 +137,21 @@ class MainMenu(tk.Frame):
                 timerStart = eo.getTimer("g")
 
                 def close_window():
+                    self.playGameBTN.config(state="normal")
+                    print("window closed")
                     new.destroy()
+
+                def countToZero(count):
+                    timer_label.config(text=str(count - 1))  # for some reason delayed yung first countdown kaya -1
+                    if count > 0:
+                        new.after(1000, lambda: countToZero(count - 1))
+                    else:
+                        close_window()
+
+                timer_label = Label(new, text=str(timerStart), font=("Arial", 54, "bold"))
+                timer_label.pack()
+
+                new.after(1000, lambda: countToZero(timerStart))
 
                 print(timerStart)
                 timer = threading.Timer(timerStart, close_window)
@@ -151,15 +162,31 @@ class MainMenu(tk.Frame):
                 print(e)
                 warningMsg(e)
 
-        # playGameBTN = tk.Button(self, text="PLAY GAME", command=lambda: controller.show_frame(Game), font=Font)
-        playGameBTN = tk.Button(self, text="PLAY GAME", command=playGameButton, font=Font)
-        playGameBTN.place(x=170, y=150, anchor='center')
+        def showTopP():
+            print("top p")
 
+        def showTopW():
+            print("top w")
+
+            topWord = eo.getLongestWords()
+            print(topWord)
+            print(str(topWord))
+
+
+        self.playGameBTN = tk.Button(self, text="PLAY GAME", command=playGameButton, font=("Helvetica", 20))
+        self.playGameBTN.place(x=170, y=190, anchor='center')
+
+        self.topPlayersBTN = tk.Button(self, text="TOP PLAYERS", command=showTopP, font=("Helvetica", 10))
+        self.topPlayersBTN.place(x=10, y=270, anchor='w')
+
+        self.topWordsBTN = tk.Button(self, text="TOP WORDS", command=showTopW, font=("Helvetica", 10))
+        self.topWordsBTN.place(x=10, y=310, anchor='w')
 
 class Game(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         global gameID
+    #threading.Thread(target=playGame).start()
 
         self.textWordy = tk.Label(self, fg="#333333", justify="center", text="", font=Font)
         self.textWordy.place(x=130, y=280)
@@ -171,23 +198,23 @@ class Game(tk.Frame):
         self.stack = []
 
         # INDIVIDUAL LETTERS
-        self.letter1 = tk.Label(self, fg="#333333", justify="center", text="1")
-        self.letter2 = tk.Label(self, fg="#333333", justify="center", text="2")
-        self.letter3 = tk.Label(self, fg="#333333", justify="center", text="3")
-        self.letter4 = tk.Label(self, fg="#333333", justify="center", text="4")
-        self.letter5 = tk.Label(self, fg="#333333", justify="center", text="5")
-        self.letter6 = tk.Label(self, fg="#333333", justify="center", text="6")
-        self.letter7 = tk.Label(self, fg="#333333", justify="center", text="7")
-        self.letter8 = tk.Label(self, fg="#333333", justify="center", text="8")
-        self.letter9 = tk.Label(self, fg="#333333", justify="center", text="9")
-        self.letter10 = tk.Label(self, fg="#333333", justify="center", text="10")
-        self.letter11 = tk.Label(self, fg="#333333", justify="center", text="11")
-        self.letter12 = tk.Label(self, fg="#333333", justify="center", text="12")
-        self.letter13 = tk.Label(self, fg="#333333", justify="center", text="13")
-        self.letter14 = tk.Label(self, fg="#333333", justify="center", text="14")
-        self.letter15 = tk.Label(self, fg="#333333", justify="center", text="15")
-        self.letter16 = tk.Label(self, fg="#333333", justify="center", text="16")
-        self.letter17 = tk.Label(self, fg="#333333", justify="center", text="17")
+        self.letter1 = tk.Label(self, fg="#333333", justify="center", text="1", font=(FontLetters))
+        self.letter2 = tk.Label(self, fg="#333333", justify="center", text="2", font=(FontLetters))
+        self.letter3 = tk.Label(self, fg="#333333", justify="center", text="3", font=(FontLetters))
+        self.letter4 = tk.Label(self, fg="#333333", justify="center", text="4", font=(FontLetters))
+        self.letter5 = tk.Label(self, fg="#333333", justify="center", text="5", font=(FontLetters))
+        self.letter6 = tk.Label(self, fg="#333333", justify="center", text="6", font=(FontLetters))
+        self.letter7 = tk.Label(self, fg="#333333", justify="center", text="7", font=(FontLetters))
+        self.letter8 = tk.Label(self, fg="#333333", justify="center", text="8", font=(FontLetters))
+        self.letter9 = tk.Label(self, fg="#333333", justify="center", text="9", font=(FontLetters))
+        self.letter10 = tk.Label(self, fg="#333333", justify="center", text="10", font=(FontLetters))
+        self.letter11 = tk.Label(self, fg="#333333", justify="center", text="11", font=(FontLetters))
+        self.letter12 = tk.Label(self, fg="#333333", justify="center", text="12", font=(FontLetters))
+        self.letter13 = tk.Label(self, fg="#333333", justify="center", text="13", font=(FontLetters))
+        self.letter14 = tk.Label(self, fg="#333333", justify="center", text="14", font=(FontLetters))
+        self.letter15 = tk.Label(self, fg="#333333", justify="center", text="15", font=(FontLetters))
+        self.letter16 = tk.Label(self, fg="#333333", justify="center", text="16", font=(FontLetters))
+        self.letter17 = tk.Label(self, fg="#333333", justify="center", text="17", font=(FontLetters))
         self.letter1.place(x=120, y=70, width=30, height=30)
         self.letter2.place(x=160, y=70, width=30, height=30)
         self.letter3.place(x=200, y=70, width=30, height=30)
@@ -209,8 +236,8 @@ class Game(tk.Frame):
         # OTHER LABELS N STUFF
         self.roundLabel = tk.Label(self, fg="#333333", justify="left", text="ROUND: ")
         self.roundLabel.place(x=10, y=110, width=70, height=25)
-        self.roundNum = tk.Label(self, fg="#333333", justify="left", text="0")
-        self.roundNum.place(x=70, y=110, width=30, height=25)
+        self.roundNumLab = tk.Label(self, fg="#333333", justify="left", text="0")
+        self.roundNumLab.place(x=70, y=110, width=30, height=25)
 
         self.winsLabel = tk.Label(self, fg="#333333", justify="left", text="WINS: ")
         self.winsLabel.place(x=10, y=150, width=70, height=25)
@@ -234,6 +261,15 @@ class Game(tk.Frame):
         self.letters = []
 
         self.availableLetters = []
+
+        #threading.Thread(target=self.checkRounds).start()
+
+    def checkRounds(self):
+        if gameID != 0 or not None:
+            print("ROUND:" + str(self.roundNum)+" OF GAME: "+str(gameID))
+            self.roundNumLab = eo.getRound(gameID)
+            #self.roundNumLab.config(text=str(self.roundNum))
+
 
     def handle_key(self, event):
         # print(self.letters)
@@ -270,57 +306,73 @@ class Game(tk.Frame):
             label_texts[i].configure(text=char_array[i])
 
     def ready(self):
+        #if roundNum == 0:
+            #threading.Thread(target=self.checkRounds).start()
+            #print("round counter thread")
+        print("READY BUTTON CLICKED")
         self.readyBTN.config(state="disabled")
 
-        startCountdown = threading.Thread(target=self.timer())
-
-        print("X", userID)
-        print("V", gameID)
+        print("USER ID: ", userID)
+        print("GAME ID: ", gameID)
 
         print(eo.ready(int(userID), int(gameID)))
-        startCountdown.start()
+
+        self.timer()
         # result = lambda: eo.check_winner(gameID)
         # executor_service.submit(result)
 
         round_counter = lambda: self.addRound()
 
+    # sa round itself
     def roundTimer(self):
-        time.sleep(0.1)
-        print("roundTIMER STARTED")
-        roundTimer = eo.getTimer("round")
-        print("ROUND TMR " + str(roundTimer))
-        print(roundTimer)
 
-        if roundTimer == 0:
-            print("U SHOULD SEE THIS ROUND IS OVER OK!")
+        def after():
+            print("ROUND IS OVER!!")
+
+            self.checkRounds()
+
             self.readyBTN.config(state="normal")
+            print("PRESS READY!!")
 
-        else:
-            print("ELSE")
-            timer_object_round = threading.Timer(roundTimer, self.roundTimer)
-            timer_object_round.start()
+        self.readyBTN.config(state="disabled")
+        roundTimer = eo.getTimer("round")
+        print()
+        print("ROUND TIMER START AT: " + str(roundTimer))
 
+        timer = threading.Timer(roundTimer, after)
+        timer.start()
+
+        # while roundTimer > 0:
+        # print("ROUND TIMER COUNTER: " + str(roundTimer))
+        # roundTimer = eo.getTimer("round")
+        # time.sleep(1)
+
+    # before round
     def timer(self):
-        print("TIMERWORK")
+        self.readyBTN.config(state="disabled")
+        print("PRE ROUND COUNTDOWN STARTED")
         global gameID, timer_value
         self.letters = list(eo.requestLetters(int(gameID)))
-        print(self.letters)
-        time.sleep(0.1)
         timer_value = eo.getTimer("r")
         self.timerLabel.config(text=str(timer_value))
 
-        print("ASDASD", str(timer_value))
+        print("PRE ROUND COUNTDOWN VALUE START: ", str(timer_value))
+        print("LETTERS THIS ROUND: " + str(self.letters))
+        time.sleep(0.1)  # not sure if necessary, 0 kasi una nareretrieve na value
 
-        if timer_value == 0:
-            print("xxxxx" + str(self.letters))
-            self.update_label_texts(self.letters)
-            self.availableLetters = self.letters.copy()
-            self.roundTimer()
+        while timer_value > 0:
+            print("READY COUNTER: " + str(timer_value))
+            timer_value = eo.getTimer("r")
+            time.sleep(1)
 
-        else:
-            timer_object = threading.Timer(timer_value, self.timer)
-            timer_object.start()
+        print("READY TIMER FINISH, ROUND SHOULD START NA")
+        self.roundTimer()
+        self.update_label_texts(self.letters)
+        self.availableLetters = self.letters.copy()
 
+        # else:
+        # timer_object = threading.Timer(timer_value, self.timer)
+        # timer_object.start()
 
     def addRound(self):
         self.roundNum += 1
@@ -339,7 +391,7 @@ class Application(tk.Tk):
 
         window = tk.Frame(self)
         window.pack()
-        window.pack_propagate(0)
+        window.pack_propagate(False)
 
         Font_tuple = ("Comic Sans MS", 20, "bold")
 
@@ -353,6 +405,7 @@ class Application(tk.Tk):
         for F in (LogIn, MainMenu, Game):
             frame = F(window, self)
             self.frames[F] = frame
+            self.title("WORDY - GROUP 7 :D")
             frame.grid(row=0, column=0, sticky="nsew")
 
         # self.show_frame(Game)
