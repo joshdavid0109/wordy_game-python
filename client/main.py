@@ -1,3 +1,4 @@
+import concurrent.futures
 import random
 import threading
 import time
@@ -257,7 +258,9 @@ class Game(tk.Frame):
         self.letters = []
 
         self.availableLetters = []
+        self.readytimervaltemp = 0
 
+        self.idOfDaWinner = 0
         #threading.Thread(target=self.checkRounds).start()
 
     def checkRounds(self):
@@ -354,17 +357,17 @@ class Game(tk.Frame):
 
         print("PRE ROUND COUNTDOWN VALUE START: ", str(timer_value))
         print("LETTERS THIS ROUND: " + str(self.letters))
+
         time.sleep(0.1)  # not sure if necessary, 0 kasi una nareretrieve na value
+        self.readytimervaltemp = wordyGame.getTimer("r")
 
         def updateReadyTimer():
-            while timer_value >= 0:
-                readytimervaltemp = wordyGame.getTimer("r")
-                self.timerLabel.config(text=str(readytimervaltemp))
-                print(readytimervaltemp)
-                time.sleep(1)
+            print("thread did somtin")
+            self.readytimervaltemp = wordyGame.getTimer("r")
+            self.timerLabel.config(text=str(self.readytimervaltemp))
 
-        update_thread = threading.Thread(target=updateReadyTimer())
-        update_thread.start()
+            if self.readytimervaltemp == 0:
+                self.idOfDaWinner = wordyGame.checkWinner(gameID)
 
         print("READY TIMER FINISH, ROUND START NA")
         self.checkRounds()
