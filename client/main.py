@@ -1,4 +1,3 @@
-import concurrent.futures
 import random
 import threading
 import time
@@ -24,7 +23,7 @@ FontLetterz = ("Helvetica", 12, "bold")
 connector = daConnector("localhost", 9999)  # should be read sa config
 connector.connect()
 
-wordyGame = Connector.eo
+eo = Connector.eo
 gameID = None
 userID = None
 timer_value = None
@@ -61,7 +60,7 @@ class LogIn(tk.Frame):
             userId = userIdTextField.get()
             password = passwordTextField.get()
             try:
-                wordyGame.login(userId, password)
+                eo.login(userId, password)
             except Exception as e:
                 print(e)
                 traceback.print_exc()
@@ -108,8 +107,8 @@ class MainMenu(tk.Frame):
                 print("exec a")
                 global userID, gameID
                 print("USER ID: ", userID)
-                gameID = wordyGame.playGame(int(userID))
-                print(wordyGame.getTimer("g"))
+                gameID = eo.playGame(int(userID))
+                print(eo.getTimer("g"))
             except Exception as e:
                 print(e)
                 print("returning to main menu...")
@@ -136,7 +135,7 @@ class MainMenu(tk.Frame):
                 # WAIT MUNA <1 SECOND KASI 0 MAKUKUHA NA ANO NUN TIMER PAG FIRST TYM HEHEH
                 time.sleep(0.1)
 
-                timerStart = wordyGame.getTimer("g")
+                timerStart = eo.getTimer("g")
 
                 def close_window():
                     self.playGameBTN.config(state="normal")
@@ -257,18 +256,14 @@ class Game(tk.Frame):
 
         self.letters = []
 
-        self.roundTimerVal = 0
-
         self.availableLetters = []
-        self.readytimervaltemp = 0
 
-        self.idOfDaWinner = 0
         #threading.Thread(target=self.checkRounds).start()
 
     def checkRounds(self):
         if gameID != 0 or not None:
             print("ROUND:" + str(self.roundNum)+" OF GAME: "+str(gameID))
-            self.roundNum = wordyGame.getRound(gameID)
+            self.roundNum = eo.getRound(gameID)
             self.roundNumLab.config(text=str(self.roundNum))
 
     def handle_key(self, event):
@@ -280,7 +275,7 @@ class Game(tk.Frame):
                 print("WORD SENT  : ", entered_word)
                 self.textWordy.config(text="")
                 self.availableLetters = self.letters.copy()
-                wordyGame.checkWord(entered_word, int(gameID), int(userID))
+                eo.checkWord(entered_word, int(gameID), int(userID))
             except Exception as e:
                 print(str(e.args[0]))
             else:
@@ -307,7 +302,7 @@ class Game(tk.Frame):
 
     def ready(self):
         print("READY BUTTON CLICKED")
-        self.roundNum = wordyGame.getRound(gameID)
+        self.roundNum = eo.getRound(gameID)
 
         print("STARTING - ROUND: "+str(self.roundNum)+" OF GAME: "+str(gameID))
 
@@ -316,7 +311,7 @@ class Game(tk.Frame):
         print("USER ID: ", userID)
         print("GAME ID: ", gameID)
 
-        print(wordyGame.ready(int(userID), int(gameID)))
+        print(eo.ready(int(userID), int(gameID)))
 
         self.timer()
         # result = lambda: eo.check_winner(gameID)
@@ -336,7 +331,7 @@ class Game(tk.Frame):
             print("PRESS READY!!")
 
         self.readyBTN.config(state="disabled")
-        roundTimer = wordyGame.getTimer("round")
+        roundTimer = eo.getTimer("round")
         print()
         print("ROUND TIMER START AT: " + str(roundTimer))
 
@@ -352,32 +347,18 @@ class Game(tk.Frame):
     def timer(self):
         self.readyBTN.config(state="disabled")
         print("PRE ROUND COUNTDOWN STARTED")
-        global gameID
-        self.letters = list(wordyGame.requestLetters(int(gameID)))
-        self.roundTimerVal = wordyGame.getTimer("r")
+        global gameID, timer_value
+        self.letters = list(eo.requestLetters(int(gameID)))
+        timer_value = eo.getTimer("r")
+        self.timerLabel.config(text=str(timer_value))
 
+        print("PRE ROUND COUNTDOWN VALUE START: ", str(timer_value))
+        print("LETTERS THIS ROUND: " + str(self.letters))
         time.sleep(0.1)  # not sure if necessary, 0 kasi una nareretrieve na value
 
-        if self.roundTimerVal == 0:
-            self.roundTimerVal = 10
-
-        self.timerLabel.config(text=str(self.roundTimerVal))
-
-        print("PRE ROUND COUNTDOWN VALUE START: ", str(self.roundTimerVal))
-        print("LETTERS THIS ROUND: " + str(self.letters))
-
-
-        self.readytimervaltemp = wordyGame.getTimer("r")
-        self.roundTimerVal = wordyGame.getTimer("r")
-
-        if self.roundTimerVal == 0:
-            self.roundTimerVal = 11
-
-        print("U SHOULD NOT BE ZERO: "+str(self.roundTimerVal))
-
-        while self.roundTimerVal > 0:
-            print("READY COUNTER: " + str(self.roundTimerVal))
-            print(self.roundTimerVal)
+        while timer_value > 0:
+            print("READY COUNTER: " + str(timer_value))
+            timer_value = eo.getTimer("r")
             time.sleep(1)
 
         print("READY TIMER FINISH, ROUND START NA")
