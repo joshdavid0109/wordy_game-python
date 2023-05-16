@@ -101,6 +101,14 @@ class WordyGamePlayer (omniORB.StructBase):
         self.gameID = gameID
         self.status = status
 
+    def __init__(self):
+        self.status = ""
+        self.id = 0
+        self.gameID =0
+        self.wins = 0
+
+
+
 _0_WordyGame.WordyGamePlayer = WordyGamePlayer
 _0_WordyGame._d_WordyGamePlayer  = (omniORB.tcInternal.tv_struct, WordyGamePlayer, WordyGamePlayer._NP_RepositoryId, "WordyGamePlayer", "id", omniORB.tcInternal.tv_long, "wins", omniORB.tcInternal.tv_long, "gameID", omniORB.tcInternal.tv_long, "status", (omniORB.tcInternal.tv_string,0))
 _0_WordyGame._tc_WordyGamePlayer = omniORB.tcInternal.createTypeCode(_0_WordyGame._d_WordyGamePlayer)

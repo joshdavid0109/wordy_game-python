@@ -70,8 +70,9 @@ module WordyGame {
     long getRound(in long gameID);
     string checkMatchStatus(in long gameID);
     letters requestLetters(in long gameID);
+    long getPlayerID(in string username);
     string checkWinner(in long gameID);
-    long getTimer(in string of);
+    long getTimer(in long gameID, in string of);
 
     TopWords getLongestWords();
     TopPlayers getTopPlayers();

@@ -81,7 +81,7 @@ class MainMenu(tk.Frame):
         tk.Frame.__init__(self, parent)
 
         # hindi gumagana kapag 2022-2_9328-fingrp7_others/res/bookCover.jpg lang nilagay ko :( replace with absolute file path nalang
-        image = Image.open("C:/Users/ADMIN/PycharmProjects/2022-2_9328-fingrp7_others/res/bookCover.jpg")
+        image = Image.open("C:/Users/joshdavid0109/PycharmProjects/2022-2_9328-fingrp7_other/res/bookCover.jpg")
         photo = ImageTk.PhotoImage(image)
 
         background = tk.Label(self, image=photo)
