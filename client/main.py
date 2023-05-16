@@ -257,6 +257,8 @@ class Game(tk.Frame):
 
         self.letters = []
 
+        self.roundTimerVal = 0
+
         self.availableLetters = []
         self.readytimervaltemp = 0
 
@@ -350,24 +352,33 @@ class Game(tk.Frame):
     def timer(self):
         self.readyBTN.config(state="disabled")
         print("PRE ROUND COUNTDOWN STARTED")
-        global gameID, timer_value
+        global gameID
         self.letters = list(wordyGame.requestLetters(int(gameID)))
-        timer_value = wordyGame.getTimer("r")
-        self.timerLabel.config(text=str(timer_value))
-
-        print("PRE ROUND COUNTDOWN VALUE START: ", str(timer_value))
-        print("LETTERS THIS ROUND: " + str(self.letters))
+        self.roundTimerVal = wordyGame.getTimer("r")
 
         time.sleep(0.1)  # not sure if necessary, 0 kasi una nareretrieve na value
+
+        if self.roundTimerVal == 0:
+            self.roundTimerVal = 10
+
+        self.timerLabel.config(text=str(self.roundTimerVal))
+
+        print("PRE ROUND COUNTDOWN VALUE START: ", str(self.roundTimerVal))
+        print("LETTERS THIS ROUND: " + str(self.letters))
+
+
         self.readytimervaltemp = wordyGame.getTimer("r")
+        self.roundTimerVal = wordyGame.getTimer("r")
 
-        def updateReadyTimer():
-            print("thread did somtin")
-            self.readytimervaltemp = wordyGame.getTimer("r")
-            self.timerLabel.config(text=str(self.readytimervaltemp))
+        if self.roundTimerVal == 0:
+            self.roundTimerVal = 11
 
-            if self.readytimervaltemp == 0:
-                self.idOfDaWinner = wordyGame.checkWinner(gameID)
+        print("U SHOULD NOT BE ZERO: "+str(self.roundTimerVal))
+
+        while self.roundTimerVal > 0:
+            print("READY COUNTER: " + str(self.roundTimerVal))
+            print(self.roundTimerVal)
+            time.sleep(1)
 
         print("READY TIMER FINISH, ROUND START NA")
         self.checkRounds()
