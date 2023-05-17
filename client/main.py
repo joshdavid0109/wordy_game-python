@@ -17,6 +17,7 @@ from Connector import daConnector
 
 Font = ("Comic Sans MS", 15, "bold")
 FontLetters = ("Courier", 13, "bold")
+FontLetterz = ("Helvetica", 12, "bold")
 
 # connector = daConnector("192.168.219.133", 9999)  # should be read sa config
 connector = daConnector("localhost", 9999)  # should be read sa config
@@ -168,11 +169,6 @@ class MainMenu(tk.Frame):
         def showTopW():
             print("top w")
 
-            topWord = eo.getLongestWords()
-            print(topWord)
-            print(str(topWord))
-
-
         self.playGameBTN = tk.Button(self, text="PLAY GAME", command=playGameButton, font=("Helvetica", 20))
         self.playGameBTN.place(x=170, y=190, anchor='center')
 
@@ -198,23 +194,23 @@ class Game(tk.Frame):
         self.stack = []
 
         # INDIVIDUAL LETTERS
-        self.letter1 = tk.Label(self, fg="#333333", justify="center", text="1", font=(FontLetters))
-        self.letter2 = tk.Label(self, fg="#333333", justify="center", text="2", font=(FontLetters))
-        self.letter3 = tk.Label(self, fg="#333333", justify="center", text="3", font=(FontLetters))
-        self.letter4 = tk.Label(self, fg="#333333", justify="center", text="4", font=(FontLetters))
-        self.letter5 = tk.Label(self, fg="#333333", justify="center", text="5", font=(FontLetters))
-        self.letter6 = tk.Label(self, fg="#333333", justify="center", text="6", font=(FontLetters))
-        self.letter7 = tk.Label(self, fg="#333333", justify="center", text="7", font=(FontLetters))
-        self.letter8 = tk.Label(self, fg="#333333", justify="center", text="8", font=(FontLetters))
-        self.letter9 = tk.Label(self, fg="#333333", justify="center", text="9", font=(FontLetters))
-        self.letter10 = tk.Label(self, fg="#333333", justify="center", text="10", font=(FontLetters))
-        self.letter11 = tk.Label(self, fg="#333333", justify="center", text="11", font=(FontLetters))
-        self.letter12 = tk.Label(self, fg="#333333", justify="center", text="12", font=(FontLetters))
-        self.letter13 = tk.Label(self, fg="#333333", justify="center", text="13", font=(FontLetters))
-        self.letter14 = tk.Label(self, fg="#333333", justify="center", text="14", font=(FontLetters))
-        self.letter15 = tk.Label(self, fg="#333333", justify="center", text="15", font=(FontLetters))
-        self.letter16 = tk.Label(self, fg="#333333", justify="center", text="16", font=(FontLetters))
-        self.letter17 = tk.Label(self, fg="#333333", justify="center", text="17", font=(FontLetters))
+        self.letter1 = tk.Label(self, fg="#333333", justify="center", text="1", font=FontLetters)
+        self.letter2 = tk.Label(self, fg="#333333", justify="center", text="2", font=FontLetters)
+        self.letter3 = tk.Label(self, fg="#333333", justify="center", text="3", font=FontLetters)
+        self.letter4 = tk.Label(self, fg="#333333", justify="center", text="4", font=FontLetters)
+        self.letter5 = tk.Label(self, fg="#333333", justify="center", text="5", font=FontLetters)
+        self.letter6 = tk.Label(self, fg="#333333", justify="center", text="6", font=FontLetters)
+        self.letter7 = tk.Label(self, fg="#333333", justify="center", text="7", font=FontLetters)
+        self.letter8 = tk.Label(self, fg="#333333", justify="center", text="8", font=FontLetters)
+        self.letter9 = tk.Label(self, fg="#333333", justify="center", text="9", font=FontLetters)
+        self.letter10 = tk.Label(self, fg="#333333", justify="center", text="10", font=FontLetters)
+        self.letter11 = tk.Label(self, fg="#333333", justify="center", text="11", font=FontLetters)
+        self.letter12 = tk.Label(self, fg="#333333", justify="center", text="12", font=FontLetters)
+        self.letter13 = tk.Label(self, fg="#333333", justify="center", text="13", font=FontLetters)
+        self.letter14 = tk.Label(self, fg="#333333", justify="center", text="14", font=FontLetters)
+        self.letter15 = tk.Label(self, fg="#333333", justify="center", text="15", font=FontLetters)
+        self.letter16 = tk.Label(self, fg="#333333", justify="center", text="16", font=FontLetters)
+        self.letter17 = tk.Label(self, fg="#333333", justify="center", text="17", font=FontLetters)
         self.letter1.place(x=120, y=70, width=30, height=30)
         self.letter2.place(x=160, y=70, width=30, height=30)
         self.letter3.place(x=200, y=70, width=30, height=30)
@@ -267,9 +263,8 @@ class Game(tk.Frame):
     def checkRounds(self):
         if gameID != 0 or not None:
             print("ROUND:" + str(self.roundNum)+" OF GAME: "+str(gameID))
-            self.roundNumLab = eo.getRound(gameID)
-            #self.roundNumLab.config(text=str(self.roundNum))
-
+            self.roundNum = eo.getRound(gameID)
+            self.roundNumLab.config(text=str(self.roundNum))
 
     def handle_key(self, event):
         # print(self.letters)
@@ -303,13 +298,14 @@ class Game(tk.Frame):
     def update_label_texts(self, char_array):
         label_texts = [getattr(self, f"letter{i}") for i in range(1, 18)]
         for i in range(len(char_array)):
-            label_texts[i].configure(text=char_array[i])
+            label_texts[i].configure(text=char_array[i].upper())
 
     def ready(self):
-        #if roundNum == 0:
-            #threading.Thread(target=self.checkRounds).start()
-            #print("round counter thread")
         print("READY BUTTON CLICKED")
+        self.roundNum = eo.getRound(gameID)
+
+        print("STARTING - ROUND: "+str(self.roundNum)+" OF GAME: "+str(gameID))
+
         self.readyBTN.config(state="disabled")
 
         print("USER ID: ", userID)
@@ -365,7 +361,8 @@ class Game(tk.Frame):
             timer_value = eo.getTimer("r")
             time.sleep(1)
 
-        print("READY TIMER FINISH, ROUND SHOULD START NA")
+        print("READY TIMER FINISH, ROUND START NA")
+        self.checkRounds()
         self.roundTimer()
         self.update_label_texts(self.letters)
         self.availableLetters = self.letters.copy()
