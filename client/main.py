@@ -18,12 +18,12 @@ from Connector import daConnector
 Font = ("Comic Sans MS", 15, "bold")
 FontLetters = ("Courier", 13, "bold")
 
-connector = daConnector("192.168.219.133", 9999)  # should be read sa config
-#connector = daConnector("localhost", 9999)  # should be read sa config
+# connector = daConnector("192.168.219.133", 9999)  # should be read sa config
+connector = daConnector("localhost", 9999)  # should be read sa config
 connector.connect()
 
 eo = Connector.eo
-gameID = None
+gameID = 0
 userID = None
 timer_value = None
 roundNum = 0
@@ -107,8 +107,9 @@ class MainMenu(tk.Frame):
                 global userID, gameID
                 print("USER ID: ", userID)
                 gameID = eo.playGame(int(userID))
-                print(eo.getTimer("g"))
             except Exception as e:
+                traceback.print_exc()
+
                 print(e)
                 print("returning to main menu...")
                 warningMsg(e)
@@ -133,8 +134,7 @@ class MainMenu(tk.Frame):
 
                 # WAIT MUNA <1 SECOND KASI 0 MAKUKUHA NA ANO NUN TIMER PAG FIRST TYM HEHEH
                 time.sleep(0.1)
-
-                timerStart = eo.getTimer("g")
+                timerStart = eo.getTimer(gameID, "g")
 
                 def close_window():
                     self.playGameBTN.config(state="normal")
