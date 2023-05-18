@@ -182,6 +182,7 @@ class MainMenu(tk.Frame):
 class Game(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+        self.controller = controller
         global gameID
         # threading.Thread(target=playGame).start()
 
@@ -296,6 +297,10 @@ class Game(tk.Frame):
                 self.availableLetters.remove(pressed_letter)
         self.textWordy.after(1, self.textWordy.update())
 
+    def updateWinsNum(self):
+        print("AAAAAAAAA" + str(self.numberOfWins))
+        self.winsNum.config(text=str(self.numberOfWins))
+
     def update_label_texts(self, char_array):
         label_texts = [getattr(self, f"letter{i}") for i in range(1, 18)]
         for i in range(len(char_array)):
@@ -309,14 +314,9 @@ class Game(tk.Frame):
 
         self.readyBTN.config(state="disabled")
 
-        print("USER ID: ", userID)
-        print("GAME ID: ", gameID)
-
         print(eo.ready(int(userID), int(gameID)))
 
         self.timer()
-        # result = lambda: eo.check_winner(gameID)
-        # executor_service.submit(result)
 
         round_counter = lambda: self.addRound()
 
@@ -325,13 +325,9 @@ class Game(tk.Frame):
 
         def after():
             print("ROUND IS OVER!!")
-
             self.checkRounds()
-
             time.sleep(3)
-
-            print("ID MO: " + str(userID))
-            print("ANG NANALO AY SI: " + str(eo.checkWinner(gameID)))
+            print("WINNER OF THE ROUND: " + str(eo.checkWinner(gameID)))
 
             # TRUE IF WIN
             print(str(userID) == str(eo.checkWinner(gameID)))
@@ -339,33 +335,28 @@ class Game(tk.Frame):
             if str(eo.checkWinner(int(gameID))) == str(userID):
                 self.numberOfWins += 1
                 print("YOU WIN, YOUR WINS ARE NOW: " + str(self.numberOfWins))
+                self.updateWinsNum()
 
             if str(eo.checkWinner(int(gameID))) == str("Game Over"):
-                print("TAPOS NA GAME!!!!! ")
-                if str(eo.checkMatchStatus(int(gameID))) ==str(userID):
-                    print("IKAW ANG PANALO!!!! :)")
+                print("GAME OVER!")
+                if str(eo.checkMatchStatus(int(gameID))) == str(userID):
+                    print("YOU WON THE GAME")
                 else:
-                    print("TALO KA, ANG NANALO AY SI: "+str(eo.checkMatchStatus(int(gameID))))
+                    print("YOU LOST, THE WINNER IS: " + str(eo.checkMatchStatus(int(gameID))))
 
-
-            print("MATTCH STAT: " + str(eo.checkMatchStatus(int(gameID))))
             print()
             match_status = str(eo.checkMatchStatus(int(gameID)))
-            print(match_status+" << this is match status")
+            print(match_status + " << this is match status")
 
             if len(str(eo.checkMatchStatus(int(gameID)))) > 0:
                 print("tapos na yung game")
+                print("dapat nasa main menu ka na")
+                self.controller.show_frame(MainMenu)
+                self.controller.frames[MainMenu].focus_set()
 
-            #if match_status.strip():
-                #print("TAPOS NA GAME!!!!! ")
-                ############
 
-            #else:
-                #("The match status is not empty.")
-                #print("game shall continue dapat")
-
-            self.readyBTN.config(state="normal")
             print("PRESS READY!!")
+            self.readyBTN.config(state="normal")
 
         self.readyBTN.config(state="disabled")
         roundTimer = eo.getTimer(gameID, "round")
@@ -374,11 +365,6 @@ class Game(tk.Frame):
 
         timer = threading.Timer(roundTimer, after)
         timer.start()
-
-        # while roundTimer > 0:
-        # print("ROUND TIMER COUNTER: " + str(roundTimer))
-        # roundTimer = eo.getTimer("round")
-        # time.sleep(1)
 
     # before round
     def timer(self):
@@ -403,20 +389,6 @@ class Game(tk.Frame):
         self.roundTimer()
         self.update_label_texts(self.letters)
         self.availableLetters = self.letters.copy()
-
-        # else:
-        # timer_object = threading.Timer(timer_value, self.timer)
-        # timer_object.start()
-
-    def addRound(self):
-        self.roundNum += 1
-        self.roundNum.config(text=str(self.roundNum))
-
-    # test
-    print(gameID)
-
-    def updTimer(self):
-        print()
 
 
 class Application(tk.Tk):
