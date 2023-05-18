@@ -9,8 +9,6 @@ from tkinter.ttk import *
 
 from concurrent.futures import ThreadPoolExecutor
 
-from PIL import Image, ImageTk
-
 import Connector
 import WordyGame
 from Connector import daConnector
@@ -108,6 +106,7 @@ class MainMenu(tk.Frame):
                 global userID, gameID
                 print("USER ID: ", userID)
                 gameID = eo.playGame(int(userID))
+                print("GID AFTER " + str(gameID))
             except Exception as e:
                 traceback.print_exc()
 
@@ -135,7 +134,8 @@ class MainMenu(tk.Frame):
 
                 # WAIT MUNA <1 SECOND KASI 0 MAKUKUHA NA ANO NUN TIMER PAG FIRST TYM HEHEH
                 time.sleep(0.1)
-                timerStart = eo.getTimer(gameID, "g")
+                print("GID" + str(gameID))
+                timerStart = eo.getTimer(int(gameID), "g")
 
                 def close_window():
                     self.playGameBTN.config(state="normal")
@@ -178,11 +178,12 @@ class MainMenu(tk.Frame):
         self.topWordsBTN = tk.Button(self, text="TOP WORDS", command=showTopW, font=("Helvetica", 10))
         self.topWordsBTN.place(x=10, y=310, anchor='w')
 
+
 class Game(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         global gameID
-    #threading.Thread(target=playGame).start()
+        # threading.Thread(target=playGame).start()
 
         self.textWordy = tk.Label(self, fg="#333333", justify="center", text="", font=Font)
         self.textWordy.place(x=130, y=280)
@@ -255,14 +256,14 @@ class Game(tk.Frame):
         self.roundNum = 0
 
         self.letters = []
-
+        self.numberOfWins = 0
         self.availableLetters = []
 
-        #threading.Thread(target=self.checkRounds).start()
+        # threading.Thread(target=self.checkRounds).start()
 
     def checkRounds(self):
         if gameID != 0 or not None:
-            print("ROUND:" + str(self.roundNum)+" OF GAME: "+str(gameID))
+            print("ROUND:" + str(self.roundNum) + " OF GAME: " + str(gameID))
             self.roundNum = eo.getRound(gameID)
             self.roundNumLab.config(text=str(self.roundNum))
 
@@ -304,7 +305,7 @@ class Game(tk.Frame):
         print("READY BUTTON CLICKED")
         self.roundNum = eo.getRound(gameID)
 
-        print("STARTING - ROUND: "+str(self.roundNum)+" OF GAME: "+str(gameID))
+        print("STARTING - ROUND: " + str(self.roundNum) + " OF GAME: " + str(gameID))
 
         self.readyBTN.config(state="disabled")
 
@@ -326,12 +327,24 @@ class Game(tk.Frame):
             print("ROUND IS OVER!!")
 
             self.checkRounds()
+            print("ID MO: " + str(userID))
+            print("ANG NANALO AY SI: "+str(eo.checkWinner(gameID)))
+
+            time.sleep(0.1)
+            if eo.checkWinner(int(gameID)) == int(userID):
+                self.numberOfWins += 1
+                print("YOU WIN, YOUR WINS ARE NOW: " + str(self.numberOfWins))
+
+            print("MATTCH STAT: "+str(eo.checkMatchStatus))
+            if not eo.checkMatchStatus:
+                print("tapos na yung game")
+                # magclose na window and end na game
 
             self.readyBTN.config(state="normal")
             print("PRESS READY!!")
 
         self.readyBTN.config(state="disabled")
-        roundTimer = eo.getTimer("round")
+        roundTimer = eo.getTimer(gameID, "round")
         print()
         print("ROUND TIMER START AT: " + str(roundTimer))
 
@@ -349,7 +362,7 @@ class Game(tk.Frame):
         print("PRE ROUND COUNTDOWN STARTED")
         global gameID, timer_value
         self.letters = list(eo.requestLetters(int(gameID)))
-        timer_value = eo.getTimer("r")
+        timer_value = eo.getTimer(int(gameID), "r")
         self.timerLabel.config(text=str(timer_value))
 
         print("PRE ROUND COUNTDOWN VALUE START: ", str(timer_value))
@@ -358,7 +371,7 @@ class Game(tk.Frame):
 
         while timer_value > 0:
             print("READY COUNTER: " + str(timer_value))
-            timer_value = eo.getTimer("r")
+            timer_value = eo.getTimer(int(gameID), "r")
             time.sleep(1)
 
         print("READY TIMER FINISH, ROUND START NA")
