@@ -27,6 +27,8 @@ userID = None
 roundNum = 0
 winsNum = 0
 
+timer_lock = threading.Lock()
+
 
 def setGameID(num):
     global gameID
@@ -225,20 +227,22 @@ class Game(tk.Frame):
         print("STARTING - ROUND: " + str(self.roundNum) + " OF GAME: " + str(gameID))
         self.readyBTN.config(state="disabled")
         eo.ready(int(userID), int(gameID))
-        self.timer()
+
+        timer_thread = threading.Thread(target=self.timer)
+        timer_thread.start()
 
     # before round, after ready btn is clicked
     def timer(self):
-        self.readyBTN.config(state="disabled")
         print("PRE ROUND COUNTDOWN STARTED")
         global gameID
         self.letters = list(eo.requestLetters(int(gameID)))
-        self.timerLabel.config(text=str("10"))
 
         def update_timer_label():
             print("THREAD TIMER START")
-            eo.getTimer(int(gameID), "r")
+            print(int(eo.getTimer(int(gameID), "r")))
             time.sleep(1)
+            self.readyTimer = eo.getTimer(int(gameID), "r")
+            print(self.readyTimer)
             while self.readyTimer > 0:
                 print("NAGTRUE")
                 self.readyTimer = eo.getTimer(int(gameID), "r")
@@ -247,11 +251,12 @@ class Game(tk.Frame):
                 time.sleep(1)
 
             print("nagtapos na")
+            self.readyTimer = 10
+            self.timerLabel.config(text=str(self.readyTimer))
             self.afterReadyTimer()
             return
 
-        timer_thread = threading.Thread(target=update_timer_label, )
-        timer_thread.start()
+        update_timer_label()
 
     def afterReadyTimer(self):
         print("READY TIMER FINISH, ROUND START NA")
