@@ -84,24 +84,33 @@ class MainMenu(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-
+        self.shutdown_flag = threading.Event() #pang shut down ng thread kung nagstart na yung timer.starrt
         # wordyLabel = tk.Label(self, text="WORDY", bg='green')
         self.wordyLabel = tk.Label(self, text="WORDY", font=("Impact", 56))
         self.wordyLabel.place(x=170, y=50, anchor="center")
 
         # wordyLabel.configure(anchor="center")
 
+        # play game button is clicked, run two threads
         def playGameButton():
             try:
-                threading.Thread(target=playGame).start()
-                threading.Thread(target=open_countdown).start()
+                playGameThread = threading.Thread(target=playGame)
+                openCountdownThread = threading.Thread(target=open_countdown)
+
+                playGameThread.start()
+                openCountdownThread.start()
+
+                self.threads = [playGameThread, openCountdownThread]
+
             except Exception as e:
                 traceback.print_exc()
                 print(str(e.args[0]))
 
+        def close_countdown_thread():
+            self.shutdown_flag.set()
+
         def playGame():
             try:
-                print("exec a")
                 global userID, gameID
                 print("USER ID: ", userID)
                 gameID = eo.playGame(int(userID))
@@ -154,7 +163,7 @@ class MainMenu(tk.Frame):
                 new.after(1000, lambda: countToZero(timerStart))
 
                 print(timerStart)
-                timer = threading.Timer(timerStart, close_window)
+                timer = threading.Timer(timerStart, close_countdown_thread)
                 timer.start()
 
             except Exception as e:
@@ -195,14 +204,13 @@ class Game(tk.Frame):
         self.focus_set()
         self.stack = []
 
-
         self.roundNum = 0
         self.numberOfWins = 0
 
-        self.letters = [] # ALL letters per round
-        self.availableLetters = [] # temporary char array to place mga hindi pa nagamit ni user na letters
+        self.letters = []  # ALL letters per round
+        self.availableLetters = []  # temporary char array to place mga hindi pa nagamit ni user na letters
 
-        #threading.Thread(target=self.checkRounds).start()
+        # threading.Thread(target=self.checkRounds).start()
 
     def checkRounds(self):
         if gameID != 0 or not None:
@@ -275,8 +283,7 @@ class Game(tk.Frame):
             print(match_status + " << this is match status")
 
             if str(eo.checkMatchStatus(int(gameID))) != "" and str(eo.checkMatchStatus(int(gameID))) != "ready":
-                print("tapos na yung game")
-                print("dapat nasa main menu ka na")
+                messagebox.showinfo("WORDY", "GAME OVER! ")
                 self.controller.show_frame(MainMenu)
                 self.controller.frames[MainMenu].focus_set()
 
@@ -377,6 +384,7 @@ class Game(tk.Frame):
         self.gameIDLabel.place(x=10, y=10, width=70, height=25)
         self.readyBTN = tk.Button(self, text="READY", command=self.readyBtnClicked)  # test lang, will change
         self.readyBTN.place(x=30, y=300)
+
 
 class Application(tk.Tk):
     def __init__(self, *args, **kwargs):
