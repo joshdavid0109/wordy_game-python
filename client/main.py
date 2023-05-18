@@ -186,35 +186,15 @@ class Game(tk.Frame):
         self.textWordy = tk.Label(self, fg="#333333", justify="center", text="", font=Font)
         self.textWordy.place(x=130, y=280)
 
+        self.initLetters()
+        self.fixLettersPlace()
+        self.initLabels()
         self.pack()
         self.focus_set()
         self.bind("<Key>", self.handle_key)
         self.focus_set()
         self.stack = []
 
-        # FIX LETTERS
-        self.initLetters()
-        self.fixLettersPlace()
-
-        # OTHER LABELS N STUFF
-        self.roundLabel = tk.Label(self, fg="#333333", justify="left", text="ROUND: ")
-        self.roundLabel.place(x=10, y=110, width=70, height=25)
-        self.roundNumLab = tk.Label(self, fg="#333333", justify="left", text="0")
-        self.roundNumLab.place(x=70, y=110, width=30, height=25)
-
-        self.winsLabel = tk.Label(self, fg="#333333", justify="left", text="WINS: ")
-        self.winsLabel.place(x=10, y=150, width=70, height=25)
-        self.winsNum = tk.Label(self, fg="#333333", justify="left", text="0")
-        self.winsNum.place(x=70, y=150, width=30, height=25)
-
-        self.timerLabel = tk.Label(self, fg="#333333", justify="center", text="10")
-        self.timerLabel.place(x=20, y=260, width=70, height=25)
-
-        self.gameIDLabel = tk.Label(self, fg="#333333", justify="left", text=str(gameID))
-        self.gameIDLabel.place(x=10, y=10, width=70, height=25)
-
-        self.readyBTN = tk.Button(self, text="READY", command=self.readyBtnClicked)  # test lang, will change
-        self.readyBTN.place(x=30, y=300)
 
         self.roundNum = 0
         self.numberOfWins = 0
@@ -382,6 +362,21 @@ class Game(tk.Frame):
         self.letter16.place(x=120, y=220, width=30, height=30)
         self.letter17.place(x=160, y=220, width=30, height=30)
 
+    def initLabels(self):
+        self.roundLabel = tk.Label(self, fg="#333333", justify="left", text="ROUND: ")
+        self.roundLabel.place(x=10, y=110, width=70, height=25)
+        self.roundNumLab = tk.Label(self, fg="#333333", justify="left", text="0")
+        self.roundNumLab.place(x=70, y=110, width=30, height=25)
+        self.winsLabel = tk.Label(self, fg="#333333", justify="left", text="WINS: ")
+        self.winsLabel.place(x=10, y=150, width=70, height=25)
+        self.winsNum = tk.Label(self, fg="#333333", justify="left", text="0")
+        self.winsNum.place(x=70, y=150, width=30, height=25)
+        self.timerLabel = tk.Label(self, fg="#333333", justify="center", text="10")
+        self.timerLabel.place(x=20, y=260, width=70, height=25)
+        self.gameIDLabel = tk.Label(self, fg="#333333", justify="left", text=str(gameID))
+        self.gameIDLabel.place(x=10, y=10, width=70, height=25)
+        self.readyBTN = tk.Button(self, text="READY", command=self.readyBtnClicked)  # test lang, will change
+        self.readyBTN.place(x=30, y=300)
 
 class Application(tk.Tk):
     def __init__(self, *args, **kwargs):
