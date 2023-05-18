@@ -328,24 +328,41 @@ class Game(tk.Frame):
 
             self.checkRounds()
 
-
             time.sleep(3)
 
             print("ID MO: " + str(userID))
             print("ANG NANALO AY SI: " + str(eo.checkWinner(gameID)))
 
-            #TRUE IF WIN
-            print(str(userID)==str(eo.checkWinner(gameID)))
+            # TRUE IF WIN
+            print(str(userID) == str(eo.checkWinner(gameID)))
 
             if str(eo.checkWinner(int(gameID))) == str(userID):
                 self.numberOfWins += 1
                 print("YOU WIN, YOUR WINS ARE NOW: " + str(self.numberOfWins))
 
+            if str(eo.checkWinner(int(gameID))) == str("Game Over"):
+                print("TAPOS NA GAME!!!!! ")
+                if str(eo.checkMatchStatus(int(gameID))) ==str(userID):
+                    print("IKAW ANG PANALO!!!! :)")
+                else:
+                    print("TALO KA, ANG NANALO AY SI: "+str(eo.checkMatchStatus(int(gameID))))
+
+
             print("MATTCH STAT: " + str(eo.checkMatchStatus(int(gameID))))
             print()
-            if not str(eo.checkMatchStatus(int(gameID))):
+            match_status = str(eo.checkMatchStatus(int(gameID)))
+            print(match_status+" << this is match status")
+
+            if len(str(eo.checkMatchStatus(int(gameID)))) > 0:
                 print("tapos na yung game")
-                # magclose na window and end na game
+
+            #if match_status.strip():
+                #print("TAPOS NA GAME!!!!! ")
+                ############
+
+            #else:
+                #("The match status is not empty.")
+                #print("game shall continue dapat")
 
             self.readyBTN.config(state="normal")
             print("PRESS READY!!")
