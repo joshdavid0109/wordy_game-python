@@ -24,7 +24,6 @@ connector.connect()
 eo = Connector.eo
 gameID = 0
 userID = None
-timer_value = None
 roundNum = 0
 winsNum = 0
 
@@ -114,19 +113,16 @@ class MainMenu(tk.Frame):
                 global userID, gameID
                 print("USER ID: ", userID)
                 gameID = eo.playGame(int(userID))
-                print("GID AFTER " + str(gameID))
+                print("GAME ID: " + str(gameID))
             except Exception as e:
                 traceback.print_exc()
-
                 print(e)
                 print("returning to main menu...")
                 warningMsg(e)
             else:
                 # put code ng game here
                 if gameID != 0:
-                    print("INGAME")
                     setGameID(gameID)
-                    print("xxGAME ID: ", gameID)
                     controller.show_frame(Game)
                     controller.frames[Game].focus_set()
                 else:
@@ -195,6 +191,8 @@ class Game(tk.Frame):
         self.textWordy = tk.Label(self, fg="#333333", justify="center", text="", font=Font)
         self.textWordy.place(x=130, y=280)
 
+        self.readyTimer = 10
+
         self.initLetters()
         self.fixLettersPlace()
         self.initLabels()
@@ -229,24 +227,33 @@ class Game(tk.Frame):
         eo.ready(int(userID), int(gameID))
         self.timer()
 
-    # before round
+    # before round, after ready btn is clicked
     def timer(self):
         self.readyBTN.config(state="disabled")
         print("PRE ROUND COUNTDOWN STARTED")
-        global gameID, timer_value
+        global gameID
         self.letters = list(eo.requestLetters(int(gameID)))
-        timer_value = eo.getTimer(int(gameID), "r")
-        self.timerLabel.config(text=str(timer_value))
+        self.timerLabel.config(text=str("10"))
 
-        print("PRE ROUND COUNTDOWN VALUE START: ", str(timer_value))
-        print("LETTERS THIS ROUND: " + str(self.letters))
-        time.sleep(0.1)  # not sure if necessary, 0 kasi una nareretrieve na value
-
-        while timer_value > 0:
-            print("READY COUNTER: " + str(timer_value))
-            timer_value = eo.getTimer(int(gameID), "r")
+        def update_timer_label():
+            print("THREAD TIMER START")
+            eo.getTimer(int(gameID), "r")
             time.sleep(1)
+            while self.readyTimer > 0:
+                print("NAGTRUE")
+                self.readyTimer = eo.getTimer(int(gameID), "r")
+                print("READY TIMER: "+str(self.readyTimer))
+                self.timerLabel.config(text=str(self.readyTimer))
+                time.sleep(1)
 
+            print("nagtapos na")
+            self.afterReadyTimer()
+            return
+
+        timer_thread = threading.Thread(target=update_timer_label, )
+        timer_thread.start()
+
+    def afterReadyTimer(self):
         print("READY TIMER FINISH, ROUND START NA")
         self.checkRounds()
         self.roundTimer()
@@ -275,8 +282,10 @@ class Game(tk.Frame):
                 print("GAME OVER!")
                 if str(eo.checkMatchStatus(int(gameID))) == str(userID):
                     print("YOU WON THE GAME")
+                    print("\n\n")
                 else:
                     print("YOU LOST, THE WINNER IS: " + str(eo.checkMatchStatus(int(gameID))))
+                    print("\n\n")
 
             print()
             match_status = str(eo.checkMatchStatus(int(gameID)))
@@ -291,7 +300,9 @@ class Game(tk.Frame):
             self.readyBTN.config(state="normal")
 
         self.readyBTN.config(state="disabled")
-        roundTimer = eo.getTimer(gameID, "round")
+        # eo.getTimer(gameID, "round")
+        # time.sleep(0.1)
+        roundTimer = eo.getTimer(int(gameID), "round")
         print()
         print("ROUND TIMER START AT: " + str(roundTimer))
 
@@ -419,7 +430,6 @@ class Application(tk.Tk):
 
 def warningMsg(exception):
     messagebox.showwarning("ERROR", str(exception.args[0]))
-
 
 app = Application()
 app.mainloop()
