@@ -3,6 +3,7 @@ import threading
 import time
 import tkinter as tk
 import traceback
+import sched
 from tkinter import messagebox
 from tkinter import *
 from tkinter.ttk import *

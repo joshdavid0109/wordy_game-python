@@ -26,7 +26,7 @@ class daConnector:
             eo = obj._narrow(WordyGame.WordyGameServer)
             print(self.host)
             print(self.port)
-            print(sys.argv)
+
             print("CONNECTED:)")
         except Exception as e:
             traceback.print_exc()
