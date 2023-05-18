@@ -327,16 +327,23 @@ class Game(tk.Frame):
             print("ROUND IS OVER!!")
 
             self.checkRounds()
-            print("ID MO: " + str(userID))
-            print("ANG NANALO AY SI: "+str(eo.checkWinner(gameID)))
 
-            time.sleep(0.1)
-            if eo.checkWinner(int(gameID)) == int(userID):
+
+            time.sleep(3)
+
+            print("ID MO: " + str(userID))
+            print("ANG NANALO AY SI: " + str(eo.checkWinner(gameID)))
+
+            #TRUE IF WIN
+            print(str(userID)==str(eo.checkWinner(gameID)))
+
+            if str(eo.checkWinner(int(gameID))) == str(userID):
                 self.numberOfWins += 1
                 print("YOU WIN, YOUR WINS ARE NOW: " + str(self.numberOfWins))
 
-            print("MATTCH STAT: "+str(eo.checkMatchStatus))
-            if not eo.checkMatchStatus:
+            print("MATTCH STAT: " + str(eo.checkMatchStatus(int(gameID))))
+            print()
+            if not str(eo.checkMatchStatus(int(gameID))):
                 print("tapos na yung game")
                 # magclose na window and end na game
 
