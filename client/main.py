@@ -190,9 +190,9 @@ class MainMenu(tk.Frame):
 class Game(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        self.timerLabel = None
         self.controller = controller
         global gameID
+        self.timerLabel = None
         self.textWordy = tk.Label(self, fg="#333333", justify="center", text="", font=Font)
         self.textWordy.place(x=130, y=280)
 
@@ -244,23 +244,20 @@ class Game(tk.Frame):
         time.sleep(1)
 
         class reqLetters(threading.Thread):
-            def __init__(self, thread_name, thread_ID):
+            def __init__(self, thread_name, thread_ID, letters):
                 threading.Thread.__init__(self)
-                self.letters = None
+                self.letters = letters
                 self.thread_name = thread_name
                 self.thread_ID = thread_ID
 
-            # working siya pero hindi naiinvoke 'tong method na 'to. dapat running to sa background eh
-            # kaya hindi bumababa yung timer kasi hindi naiinvoke tong method na 'to
-
-            # TODO dapat sabay maginvoke tong thread na to sa timerThread, maybe use thread.start()?
-            #  instead of thread.run()
             def run(self):
                 self.letters = list(eo.requestLetters(int(gameID)))
+                print(self.letters) # printing naman letters, gawin lang siguro itong global para maipasa sa labas ng class na to and maupdate table
 
         class timerThread(threading.Thread):
-            def __init__(self, thread_name, thread_ID):
+            def __init__(self, thread_name, thread_ID, timerLabel):
                 threading.Thread.__init__(self)
+                self.timerLabel = timerLabel
                 self.thread_name = thread_name
                 self.thread_ID = thread_ID
 
@@ -270,16 +267,23 @@ class Game(tk.Frame):
                 while not a:
                     timez = eo.getTimer(gameID, "r")
                     print(timez)
+                    self.timerLabel.config(text=str(timez))
                     t.sleep(1)
                     timez -= 1
                     if timez < 0:
                         a = True
 
-        thread1 = timerThread("timer", 1000)
+        thread1 = timerThread("timer", 1000,self.timerLabel)
 
-        thread2 = reqLetters("reqLetters", 2)
-        thread1.run()
-        thread2.run()
+        thread2 = reqLetters("reqLetters", 2, self.letters)
+        thread1.start()
+        thread2.start()
+
+        thread1.join()
+        thread2.join()
+
+        print("updating table")
+        print(self.letters) #
 
         self.readyTimer = 10
         self.timerLabel.config(text=str(self.readyTimer))
