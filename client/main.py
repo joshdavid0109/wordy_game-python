@@ -172,10 +172,11 @@ class MainMenu(tk.Frame):
                 warningMsg(e)
 
         def showTopP():
+            print(eo.getTopPlayers())
             print("top p")
 
         def showTopW():
-            print("top w")
+            print(eo.getLongestWords())
 
         self.playGameBTN = tk.Button(self, text="PLAY GAME", command=playGameButton, font=("Helvetica", 20))
         self.playGameBTN.place(x=170, y=190, anchor='center')
@@ -301,6 +302,8 @@ class Game(tk.Frame):
         self.timerLabel.config(text=str(self.readyTimer))
         self.afterReadyTimer()
         threading.Thread(target=self.run()).start()
+        threading.Thread(target=self.afterReadyTimer()).start()
+        # self.afterReadyTimer()
         return
 
     def afterReadyTimer(self):
@@ -308,10 +311,24 @@ class Game(tk.Frame):
         self.checkRounds()
         self.roundTimer()
         self.update_label_texts(self.letters)
+
         self.availableLetters = self.letters.copy()
 
     # the 10 second round timer yung sa round itself
     def roundTimer(self):
+
+        def roundCountDown():
+            rc = False
+            print("this is running in the background1")
+            while not rc:
+                timezz = eo.getTimer(gameID, "round")
+                print(timezz)
+                self.roundTimerLabel.config(text=str(timezz))
+                t.sleep(1)
+                timezz -= 1
+                if timezz < 0:
+                    rc = True
+                    after()
 
         def after():
             print("ROUND IS OVER!!")
@@ -342,8 +359,6 @@ class Game(tk.Frame):
             match_status = str(eo.checkMatchStatus(int(gameID)))
             print(match_status + " << this is match status")
 
-
-
             print("PRESS READY!!")
             self.readyBTN.config(state="normal")
 
@@ -354,8 +369,7 @@ class Game(tk.Frame):
         print()
         print("ROUND TIMER START AT: " + str(roundTimer))
 
-        timer = threading.Timer(roundTimer, after)
-        timer.start()
+        threading.Thread(target=roundCountDown()).start()
 
     def handle_key(self, event):
         if event.keysym == "Return":
@@ -439,7 +453,9 @@ class Game(tk.Frame):
         self.winsNum.place(x=70, y=150, width=30, height=25)
         self.timerLabel = tk.Label(self, fg="#333333", justify="center", text="10")
         self.timerLabel.place(x=20, y=260, width=70, height=25)
-        self.gameIDLabel = tk.Label(self, fg="#333333", justify="left", text=str(gameID))
+        self.roundTimerLabel = tk.Label(self, fg="#333333", justify="center", text="10")
+        self.roundTimerLabel.place(x=200, y=10, width=70, height=50)
+        self.gameIDLabel = tk.Label(self, fg="#333333", justify="left", text=10)
         self.gameIDLabel.place(x=10, y=10, width=70, height=25)
         self.readyBTN = tk.Button(self, text="READY", command=self.readyBtnClicked)  # test lang, will change
         self.readyBTN.place(x=30, y=300)
