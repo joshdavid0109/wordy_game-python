@@ -235,8 +235,6 @@ class MainMenu(tk.Frame):
 
         def showTopW():
             print("top w")
-            # print(eo.getLongestWords())
-            eo.getLongestWords()
 
         self.playGameBTN = tk.Button(self, text="PLAY GAME", command=playGameButton, font=("Helvetica", 20))
         self.playGameBTN.place(x=170, y=190, anchor='center')
@@ -275,6 +273,19 @@ class Game(tk.Frame):
         self.availableLetters = []  # temporary char array to place mga hindi pa nagamit ni user na letters
 
         # threading.Thread(target=self.checkRounds).start()
+
+    def run(self):
+        global win
+        if gameID != 0:
+            check = False
+            while not check:
+                print("this is running in the background")
+                win = eo.checkMatchStatus(gameID)
+                if win != "" and win != "ready":
+                    check = True
+                    messagebox.showinfo("WORDY", "GAME OVER! ")
+                    self.controller.show_frame(MainMenu)
+                    self.controller.frames[MainMenu].focus_set()
 
     def checkRounds(self):
         if gameID != 0 or not None:
@@ -327,7 +338,6 @@ class Game(tk.Frame):
                 self.thread_ID = thread_ID
 
                 # helper function to execute timer countdown // check tester.py
-
             def run(self):
                 a = False
                 while not a:
@@ -342,47 +352,64 @@ class Game(tk.Frame):
         thread1 = timerThread("timer", 1000, self.timerLabel)
 
         thread2 = reqLetters("reqLetters", 2, self.letters)
-
         thread1.start()
         thread2.start()
+
         thread1.join()
         thread2.join()
 
         print("updating table")
-        print(roundLetters)
-        # self.update_label_texts(roundLetters)
-        # self.readyTimer = 10
-        # self.timerLabel.config(text=str(self.readyTimer))
+        self.letters = thread2.letters
+        self.update_label_texts(self.letters)
+        self.readyTimer = 10
+        self.timerLabel.config(text=str(self.readyTimer))
         self.afterReadyTimer()
+        threading.Thread(target=self.run()).start()
+        threading.Thread(target=self.afterReadyTimer()).start()
+        # self.afterReadyTimer()
         return
 
     def afterReadyTimer(self):
-
         print("READY TIMER FINISH, ROUND START NA")
         self.checkRounds()
         self.roundTimer()
-        self.update_label_texts(roundLetters)
-        self.availableLetters = roundLetters.copy()
+        self.update_label_texts(self.letters)
+
+        self.availableLetters = self.letters.copy()
 
     # the 10 second round timer yung sa round itself
     def roundTimer(self):
+
+        def roundCountDown():
+            rc = False
+            print("this is running in the background1")
+            while not rc:
+                timezz = eo.getTimer(gameID, "round")
+                print(timezz)
+                self.roundTimerLabel.config(text=str(timezz))
+                t.sleep(1)
+                timezz -= 1
+                if timezz < 0:
+                    rc = True
+                    after()
 
         def after():
             print("ROUND IS OVER!!")
             self.initLetters()
             self.checkRounds()
             time.sleep(3)
-            print("WINNER OF THE ROUND: " + str(eo.checkWinner(gameID)))
+            winnerID = str(eo.checkWinner(gameID))
+            print("WINNER OF THE ROUND: " + winnerID)
 
             # TRUE IF WIN
-            print(str(userID) == str(eo.checkWinner(gameID)))
+            print(str(userID) == str(winnerID))
 
-            if str(eo.checkWinner(int(gameID))) == str(userID):
+            if winnerID == str(userID):
                 self.numberOfWins += 1
                 print("YOU WON THE ROUND, WINS: " + str(self.numberOfWins))
                 self.updateWinsNum()
 
-            if str(eo.checkWinner(int(gameID))) == str("Game Over"):
+            if winnerID == str("Game Over"):
                 print("GAME OVER!")
                 if str(eo.checkMatchStatus(int(gameID))) == str(userID):
                     print("YOU WON THE GAME")
@@ -395,11 +422,6 @@ class Game(tk.Frame):
             match_status = str(eo.checkMatchStatus(int(gameID)))
             print(match_status + " << this is match status")
 
-            if str(eo.checkMatchStatus(int(gameID))) != "" and str(eo.checkMatchStatus(int(gameID))) != "ready":
-                messagebox.showinfo("WORDY", "GAME OVER! ")
-                self.controller.show_frame(MainMenu)
-                self.controller.frames[MainMenu].focus_set()
-
             print("PRESS READY!!")
             self.readyBTN.config(state="normal")
 
@@ -410,8 +432,7 @@ class Game(tk.Frame):
         print()
         print("ROUND TIMER START AT: " + str(roundTimer))
 
-        timer = threading.Timer(roundTimer, after)
-        timer.start()
+        threading.Thread(target=roundCountDown()).start()
 
     def handle_key(self, event):
         if event.keysym == "Return":
@@ -419,7 +440,7 @@ class Game(tk.Frame):
                 entered_word = self.textWordy.cget("text")
                 print("WORD SENT  : ", entered_word)
                 self.textWordy.config(text="")
-                self.availableLetters = roundLetters.copy()
+                self.availableLetters = self.letters.copy()
                 eo.checkWord(entered_word, int(gameID), int(userID))
             except Exception as e:
                 print(str(e.args[0]))
@@ -495,7 +516,9 @@ class Game(tk.Frame):
         self.winsNum.place(x=70, y=150, width=30, height=25)
         self.timerLabel = tk.Label(self, fg="#333333", justify="center", text="10")
         self.timerLabel.place(x=20, y=260, width=70, height=25)
-        self.gameIDLabel = tk.Label(self, fg="#333333", justify="left", text=str(gameID))
+        self.roundTimerLabel = tk.Label(self, fg="#333333", justify="center", text="10")
+        self.roundTimerLabel.place(x=200, y=10, width=70, height=50)
+        self.gameIDLabel = tk.Label(self, fg="#333333", justify="left", text=10)
         self.gameIDLabel.place(x=10, y=10, width=70, height=25)
         self.readyBTN = tk.Button(self, text="READY", command=self.readyBtnClicked)  # test lang, will change
         self.readyBTN.place(x=30, y=300)
