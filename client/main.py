@@ -5,7 +5,7 @@ import time
 import tkinter as tk
 import traceback
 import sched
-from tkinter import messagebox
+from tkinter import messagebox, ttk
 from tkinter import *
 from tkinter.ttk import *
 
@@ -36,6 +36,31 @@ timer_lock = threading.Lock()
 def setGameID(num):
     global gameID
     gameID = num
+
+
+class TopPlayers:
+    def __init__(self, rank, username, wins):
+        self.rank = rank
+        self.username = username
+        self.wins = wins
+
+    def __str__(self):
+        return f"Rank: {self.rank}, Username: {self.username}, Wins: {self.wins}"
+
+    def getRank(self):
+        return self.rank
+
+    def getUName(self):
+        return self.username
+
+    def getWins(self):
+        return self.wins
+
+
+class TopWord:
+    def __init__(self, username, word):
+        self.username = username
+        self.word = word
 
 
 class LogIn(tk.Frame):
@@ -92,6 +117,7 @@ class MainMenu(tk.Frame):
         # wordyLabel = tk.Label(self, text="WORDY", bg='green')
         self.wordyLabel = tk.Label(self, text="WORDY", font=("Impact", 56))
         self.wordyLabel.place(x=170, y=50, anchor="center")
+        self.topPlayersList = []
 
         # wordyLabel.configure(anchor="center")
 
@@ -174,9 +200,43 @@ class MainMenu(tk.Frame):
 
         def showTopP():
             print("top p")
+            topPlayerList = eo.getTopPlayers()
+            self.topPlayersList = []
+
+            for player in topPlayerList:
+                playerAsString = str(player)
+                rs = playerAsString.index("rank=") + len("rank=")
+                re = playerAsString.index(",", rs)
+                rank = int(playerAsString[rs:re])
+                us = playerAsString.index("username='") + len("username='")
+                ue = playerAsString.index("'", us)
+                username = playerAsString[us:ue]
+                ws = playerAsString.index("wins=") + len("wins=")
+                we = playerAsString.index(")", ws)
+                wins = int(playerAsString[ws:we])
+                top = TopPlayers(rank, username, wins)
+                print(top)
+                self.topPlayersList.append(top)
+
+            top_players_window = tk.Toplevel()
+            top_players_window.title("TOP PLAYERS")
+
+            treeview = ttk.Treeview(top_players_window, columns=("Rank", "Username", "Wins"))
+            treeview.pack()
+            treeview.heading("#0", text="RANK")
+            treeview.heading("#1", text="USERNAME")
+            treeview.heading("#2", text="WINS")
+
+            for player in self.topPlayersList:
+                rank = player.rank
+                username = player.username
+                wins = player.wins
+                treeview.insert("", "end", text=str(rank),values=(username, wins))
 
         def showTopW():
             print("top w")
+            # print(eo.getLongestWords())
+            eo.getLongestWords()
 
         self.playGameBTN = tk.Button(self, text="PLAY GAME", command=playGameButton, font=("Helvetica", 20))
         self.playGameBTN.place(x=170, y=190, anchor='center')
@@ -255,7 +315,8 @@ class Game(tk.Frame):
             def run(self):
                 global roundLetters
                 roundLetters = list(eo.requestLetters(int(gameID)))
-                print(roundLetters) # printing naman letters, gawin lang siguro itong global para maipasa sa labas ng class na to and maupdate table
+                print(
+                    roundLetters)  # printing naman letters, gawin lang siguro itong global para maipasa sa labas ng class na to and maupdate table
                 print("^^^^ YAN LETTERS KASJY")
 
         class timerThread(threading.Thread):
@@ -266,6 +327,7 @@ class Game(tk.Frame):
                 self.thread_ID = thread_ID
 
                 # helper function to execute timer countdown // check tester.py
+
             def run(self):
                 a = False
                 while not a:
@@ -277,7 +339,7 @@ class Game(tk.Frame):
                     if timez < 0:
                         a = True
 
-        thread1 = timerThread("timer", 1000,self.timerLabel)
+        thread1 = timerThread("timer", 1000, self.timerLabel)
 
         thread2 = reqLetters("reqLetters", 2, self.letters)
 
