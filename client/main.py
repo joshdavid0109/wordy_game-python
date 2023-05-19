@@ -279,7 +279,8 @@ class Game(tk.Frame):
         if gameID != 0:
             check = False
             while not check:
-                print("this is running in the background")
+                # print("this is running in the background")
+                time.sleep(0.5)
                 win = eo.checkMatchStatus(gameID)
                 if win != "" and win != "ready":
                     check = True
@@ -311,6 +312,8 @@ class Game(tk.Frame):
         print("PRE ROUND COUNTDOWN STARTED")
         global gameID, roundLetters
 
+        roundLetters = list(eo.requestLetters(int(gameID)))
+
         print("THREAD TIMER START")
         print(int(eo.getTimer(int(gameID), "r")))
         time.sleep(1)
@@ -326,9 +329,8 @@ class Game(tk.Frame):
             def run(self):
                 global roundLetters
                 roundLetters = list(eo.requestLetters(int(gameID)))
-                print(
-                    roundLetters)  # printing naman letters, gawin lang siguro itong global para maipasa sa labas ng class na to and maupdate table
-                print("^^^^ YAN LETTERS KASJY")
+                print("this run yes")
+                print(roundLetters)  # printing naman letters, gawin lang siguro itong global para maipasa sa labas ng class na to and maupdate table
 
         class timerThread(threading.Thread):
             def __init__(self, thread_name, thread_ID, timerLabel):
@@ -340,6 +342,8 @@ class Game(tk.Frame):
                 # helper function to execute timer countdown // check tester.py
             def run(self):
                 a = False
+                global roundLetters
+                roundLetters = list(eo.requestLetters(int(gameID)))
                 while not a:
                     timez = eo.getTimer(gameID, "r")
                     print(timez)
@@ -359,8 +363,11 @@ class Game(tk.Frame):
         thread2.join()
 
         print("updating table")
-        self.letters = thread2.letters
-        self.update_label_texts(self.letters)
+        print(roundLetters)
+        print("x x")
+        self.letters = roundLetters
+        self.update_label_texts(roundLetters)
+        self.availableLetters = roundLetters
         self.readyTimer = 10
         self.timerLabel.config(text=str(self.readyTimer))
         self.afterReadyTimer()
@@ -373,16 +380,18 @@ class Game(tk.Frame):
         print("READY TIMER FINISH, ROUND START NA")
         self.checkRounds()
         self.roundTimer()
-        self.update_label_texts(self.letters)
-
-        self.availableLetters = self.letters.copy()
+        global roundLetters
+        roundLetters = list(eo.requestLetters(int(gameID)))
+        self.update_label_texts(roundLetters)
+        self.availableLetters = roundLetters.copy()
 
     # the 10 second round timer yung sa round itself
     def roundTimer(self):
 
         def roundCountDown():
+            self.update_label_texts(roundLetters)
             rc = False
-            print("this is running in the background1")
+            # print("this is running in the background1")
             while not rc:
                 timezz = eo.getTimer(gameID, "round")
                 print(timezz)
@@ -408,6 +417,7 @@ class Game(tk.Frame):
                 self.numberOfWins += 1
                 print("YOU WON THE ROUND, WINS: " + str(self.numberOfWins))
                 self.updateWinsNum()
+
 
             if winnerID == str("Game Over"):
                 print("GAME OVER!")
@@ -440,7 +450,7 @@ class Game(tk.Frame):
                 entered_word = self.textWordy.cget("text")
                 print("WORD SENT  : ", entered_word)
                 self.textWordy.config(text="")
-                self.availableLetters = self.letters.copy()
+                self.availableLetters = roundLetters.copy()
                 eo.checkWord(entered_word, int(gameID), int(userID))
             except Exception as e:
                 print(str(e.args[0]))
