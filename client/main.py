@@ -28,6 +28,7 @@ gameID = 0
 userID = None
 roundNum = 0
 winsNum = 0
+roundLetters = []
 
 timer_lock = threading.Lock()
 
@@ -237,7 +238,7 @@ class Game(tk.Frame):
     # before round, after ready btn is clicked
     def timer(self):
         print("PRE ROUND COUNTDOWN STARTED")
-        global gameID
+        global gameID, roundLetters
 
         print("THREAD TIMER START")
         print(int(eo.getTimer(int(gameID), "r")))
@@ -246,13 +247,16 @@ class Game(tk.Frame):
         class reqLetters(threading.Thread):
             def __init__(self, thread_name, thread_ID, letters):
                 threading.Thread.__init__(self)
-                self.letters = letters
+                global roundLetters
+                roundLetters = letters
                 self.thread_name = thread_name
                 self.thread_ID = thread_ID
 
             def run(self):
-                self.letters = list(eo.requestLetters(int(gameID)))
-                print(self.letters) # printing naman letters, gawin lang siguro itong global para maipasa sa labas ng class na to and maupdate table
+                global roundLetters
+                roundLetters = list(eo.requestLetters(int(gameID)))
+                print(roundLetters) # printing naman letters, gawin lang siguro itong global para maipasa sa labas ng class na to and maupdate table
+                print("^^^^ YAN LETTERS KASJY")
 
         class timerThread(threading.Thread):
             def __init__(self, thread_name, thread_ID, timerLabel):
@@ -276,26 +280,27 @@ class Game(tk.Frame):
         thread1 = timerThread("timer", 1000,self.timerLabel)
 
         thread2 = reqLetters("reqLetters", 2, self.letters)
+
         thread1.start()
         thread2.start()
-
         thread1.join()
         thread2.join()
 
         print("updating table")
-        print(self.letters) #
-
-        self.readyTimer = 10
-        self.timerLabel.config(text=str(self.readyTimer))
+        print(roundLetters)
+        # self.update_label_texts(roundLetters)
+        # self.readyTimer = 10
+        # self.timerLabel.config(text=str(self.readyTimer))
         self.afterReadyTimer()
         return
 
     def afterReadyTimer(self):
+
         print("READY TIMER FINISH, ROUND START NA")
         self.checkRounds()
         self.roundTimer()
-        self.update_label_texts(self.letters)
-        self.availableLetters = self.letters.copy()
+        self.update_label_texts(roundLetters)
+        self.availableLetters = roundLetters.copy()
 
     # the 10 second round timer yung sa round itself
     def roundTimer(self):
@@ -352,7 +357,7 @@ class Game(tk.Frame):
                 entered_word = self.textWordy.cget("text")
                 print("WORD SENT  : ", entered_word)
                 self.textWordy.config(text="")
-                self.availableLetters = self.letters.copy()
+                self.availableLetters = roundLetters.copy()
                 eo.checkWord(entered_word, int(gameID), int(userID))
             except Exception as e:
                 print(str(e.args[0]))
