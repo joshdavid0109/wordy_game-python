@@ -1,5 +1,6 @@
 import random
 import threading
+import time as t
 import time
 import tkinter as tk
 import traceback
@@ -86,7 +87,7 @@ class MainMenu(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        self.shutdown_flag = threading.Event() #pang shut down ng thread kung nagstart na yung timer.starrt
+        self.shutdown_flag = threading.Event()  # pang shut down ng thread kung nagstart na yung timer.starrt
         # wordyLabel = tk.Label(self, text="WORDY", bg='green')
         self.wordyLabel = tk.Label(self, text="WORDY", font=("Impact", 56))
         self.wordyLabel.place(x=170, y=50, anchor="center")
@@ -189,6 +190,7 @@ class MainMenu(tk.Frame):
 class Game(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+        self.timerLabel = None
         self.controller = controller
         global gameID
         self.textWordy = tk.Label(self, fg="#333333", justify="center", text="", font=Font)
@@ -236,28 +238,53 @@ class Game(tk.Frame):
     def timer(self):
         print("PRE ROUND COUNTDOWN STARTED")
         global gameID
-        self.letters = list(eo.requestLetters(int(gameID)))
 
-        def update_timer_label():
-            print("THREAD TIMER START")
-            print(int(eo.getTimer(int(gameID), "r")))
-            time.sleep(1)
-            self.readyTimer = eo.getTimer(int(gameID), "r")
-            print(self.readyTimer)
-            while self.readyTimer > 0:
-                print("NAGTRUE")
-                self.readyTimer = eo.getTimer(int(gameID), "r")
-                print("READY TIMER: "+str(self.readyTimer))
-                self.timerLabel.config(text=str(self.readyTimer))
-                time.sleep(1)
+        print("THREAD TIMER START")
+        print(int(eo.getTimer(int(gameID), "r")))
+        time.sleep(1)
 
-            print("nagtapos na")
-            self.readyTimer = 10
-            self.timerLabel.config(text=str(self.readyTimer))
-            self.afterReadyTimer()
-            return
+        class reqLetters(threading.Thread):
+            def __init__(self, thread_name, thread_ID):
+                threading.Thread.__init__(self)
+                self.letters = None
+                self.thread_name = thread_name
+                self.thread_ID = thread_ID
 
-        update_timer_label()
+            # working siya pero hindi naiinvoke 'tong method na 'to. dapat running to sa background eh
+            # kaya hindi bumababa yung timer kasi hindi naiinvoke tong method na 'to
+
+            # TODO dapat sabay maginvoke tong thread na to sa timerThread, maybe use thread.start()?
+            #  instead of thread.run()
+            def run(self):
+                self.letters = list(eo.requestLetters(int(gameID)))
+
+        class timerThread(threading.Thread):
+            def __init__(self, thread_name, thread_ID):
+                threading.Thread.__init__(self)
+                self.thread_name = thread_name
+                self.thread_ID = thread_ID
+
+                # helper function to execute timer countdown // check tester.py
+            def run(self):
+                a = False
+                while not a:
+                    timez = eo.getTimer(gameID, "r")
+                    print(timez)
+                    t.sleep(1)
+                    timez -= 1
+                    if timez < 0:
+                        a = True
+
+        thread1 = timerThread("timer", 1000)
+
+        thread2 = reqLetters("reqLetters", 2)
+        thread1.run()
+        thread2.run()
+
+        self.readyTimer = 10
+        self.timerLabel.config(text=str(self.readyTimer))
+        self.afterReadyTimer()
+        return
 
     def afterReadyTimer(self):
         print("READY TIMER FINISH, ROUND START NA")
@@ -436,6 +463,7 @@ class Application(tk.Tk):
 
 def warningMsg(exception):
     messagebox.showwarning("ERROR", str(exception.args[0]))
+
 
 app = Application()
 app.mainloop()
