@@ -215,6 +215,19 @@ class Game(tk.Frame):
 
         # threading.Thread(target=self.checkRounds).start()
 
+    def run(self):
+        global win
+        if gameID != 0:
+            check = False
+            while not check:
+                print("this is running in the background")
+                win = eo.checkMatchStatus(gameID)
+                if win != "" and win != "ready":
+                    check = True
+                    messagebox.showinfo("WORDY", "GAME OVER! ")
+                    self.controller.show_frame(MainMenu)
+                    self.controller.frames[MainMenu].focus_set()
+
     def checkRounds(self):
         if gameID != 0 or not None:
             print("ROUND:" + str(self.roundNum) + " OF GAME: " + str(gameID))
@@ -252,7 +265,6 @@ class Game(tk.Frame):
 
             def run(self):
                 self.letters = list(eo.requestLetters(int(gameID)))
-                print(self.letters) # printing naman letters, gawin lang siguro itong global para maipasa sa labas ng class na to and maupdate table
 
         class timerThread(threading.Thread):
             def __init__(self, thread_name, thread_ID, timerLabel):
@@ -283,11 +295,12 @@ class Game(tk.Frame):
         thread2.join()
 
         print("updating table")
-        print(self.letters) #
-
+        self.letters = thread2.letters
+        self.update_label_texts(self.letters)
         self.readyTimer = 10
         self.timerLabel.config(text=str(self.readyTimer))
         self.afterReadyTimer()
+        threading.Thread(target=self.run()).start()
         return
 
     def afterReadyTimer(self):
@@ -305,17 +318,18 @@ class Game(tk.Frame):
             self.initLetters()
             self.checkRounds()
             time.sleep(3)
-            print("WINNER OF THE ROUND: " + str(eo.checkWinner(gameID)))
+            winnerID = str(eo.checkWinner(gameID))
+            print("WINNER OF THE ROUND: " + winnerID)
 
             # TRUE IF WIN
-            print(str(userID) == str(eo.checkWinner(gameID)))
+            print(str(userID) == str(winnerID))
 
-            if str(eo.checkWinner(int(gameID))) == str(userID):
+            if winnerID == str(userID):
                 self.numberOfWins += 1
                 print("YOU WON THE ROUND, WINS: " + str(self.numberOfWins))
                 self.updateWinsNum()
 
-            if str(eo.checkWinner(int(gameID))) == str("Game Over"):
+            if winnerID == str("Game Over"):
                 print("GAME OVER!")
                 if str(eo.checkMatchStatus(int(gameID))) == str(userID):
                     print("YOU WON THE GAME")
@@ -328,10 +342,7 @@ class Game(tk.Frame):
             match_status = str(eo.checkMatchStatus(int(gameID)))
             print(match_status + " << this is match status")
 
-            if str(eo.checkMatchStatus(int(gameID))) != "" and str(eo.checkMatchStatus(int(gameID))) != "ready":
-                messagebox.showinfo("WORDY", "GAME OVER! ")
-                self.controller.show_frame(MainMenu)
-                self.controller.frames[MainMenu].focus_set()
+
 
             print("PRESS READY!!")
             self.readyBTN.config(state="normal")
