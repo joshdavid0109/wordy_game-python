@@ -33,8 +33,9 @@ userID = None
 roundNum = 0
 winsNum = 0
 roundLetters = []
-global check
-global a
+check = None
+a = None
+
 
 timer_lock = threading.Lock()
 
@@ -345,14 +346,15 @@ class Game(tk.Frame):
 
     def run(self):
         global win
-        global check
-
         if gameID != 0:
+            global check
+
             check = False
             while not check:
                 # print("this is running in the background")
                 win = eo.checkMatchStatus(gameID)
                 if win != "" and win != "ready":
+
                     check = True
                     self.roundNumLab.config(text="0")
                     self.winsLabel.config(text="0")
@@ -447,6 +449,10 @@ class Game(tk.Frame):
         self.availableLetters = roundLetters
         self.readyTimer = 10
         self.timerLabel.config(text=str(self.readyTimer))
+        global a
+        if a and check:
+            print("need to stop")
+            return
         self.afterReadyTimer()
         threading.Thread(target=self.run()).start()
         threading.Thread(target=self.afterReadyTimer()).start()
@@ -455,6 +461,10 @@ class Game(tk.Frame):
 
     def afterReadyTimer(self):
         print("READY TIMER FINISH, ROUND START NA")
+        global a
+        if a and check:
+            print("need to stop")
+            return
         self.checkRounds()
         self.roundTimer()
         global roundLetters
@@ -515,7 +525,11 @@ class Game(tk.Frame):
 
         global a
         if a and check:
+            print("need to stop")
             return
+
+        # TODO HINDI NAMAN NA NAGEEXECUTE YUNG LINES AFTER NITO KASO YUNG IBANG THREAD UMAANDAR PA RIN
+        # YUNG SA UPDATING GUI TEXT WITH, READY TIMER FINISH, ROUND START NA
         self.readyBTN.config(state="disabled")
         # eo.getTimer(gameID, "round")
         # time.sleep(0.1)
