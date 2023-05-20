@@ -62,6 +62,21 @@ def setGameID(num):
         return self.wins
 
 
+class TopWord:
+    def __init__(self, username, word):
+        self.username = username
+        self.word = word
+
+    def __str__(self):
+        return f"Player Name: {self.username}, Word: {self.word}"
+
+    def getUserName(self):
+        return self.username
+
+    def getWord(self):
+        return self.word
+
+
 class LogIn(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent, width=250, height=200)
@@ -146,8 +161,9 @@ class MainMenu(tk.Frame):
         def playGame():
             try:
                 global userID, gameID
+                userID = eo.getPlayerID(str(userID))
                 print("USER ID: ", userID)
-                gameID = eo.playGame(int(userID))
+                gameID = eo.playGame((userID))
                 print("GAME ID: " + str(gameID))
             except Exception as e:
                 print(e)
@@ -238,7 +254,33 @@ class MainMenu(tk.Frame):
 
         def showTopW():
             print("top w")
-            # WordyGame.topWord
+            longestWords = eo.getLongestWords()
+            self.longestWords = []
+
+            for word in longestWords:
+                wordAsString = str(word)
+                us = wordAsString.index("username='") + len("username='")
+                ue = wordAsString.index("'", us)
+                username = wordAsString[us:ue]
+                ws = wordAsString.index("word=") + len("word=")
+                we = wordAsString.index(")", ws)
+                wins = str(wordAsString[ws:we])
+                top = TopWord(username, wins)
+                print(top)
+                self.longestWords.append(top)
+
+            longest_words_window = tk.Toplevel()
+            longest_words_window.title("LONGEST WORDS")
+
+            treeview = ttk.Treeview(longest_words_window, columns=("Username", "Wins"))
+            treeview.pack()
+            treeview.heading("#0", text="USERNAME")
+            treeview.heading("#1", text="WORDS")
+
+            for word in self.longestWords:
+                username = word.username
+                word = word.word
+                treeview.insert("", "end", text=str(username), values=(word))
 
         self.playGameBTN = tk.Button(self, text="PLAY GAME", command=playGameButton, font=("Helvetica", 20))
         self.playGameBTN.place(x=170, y=190, anchor='center')
@@ -370,8 +412,8 @@ class Game(tk.Frame):
             def run(self):
                 global a
                 a = False
-                global roundLetters
-                roundLetters = list(eo.requestLetters(int(gameID)))
+                # global roundLetters
+                # roundLetters = list(eo.requestLetters(int(gameID)))
                 while not a:
                     timez = eo.getTimer(gameID, "r")
                     print(timez)
@@ -384,7 +426,7 @@ class Game(tk.Frame):
         thread1 = timerThread("timer", 1000, self.timerLabel)
 
         thread2 = reqLetters("reqLetters", 2, self.letters, self)
-        thread2.run()
+        thread2.start()
         thread1.start()
 
         thread1.join()
@@ -433,6 +475,7 @@ class Game(tk.Frame):
         def after():
             print("ROUND IS OVER!!")
             self.checkRounds()
+            self.update_label_texts_to_default()
             time.sleep(3)
             winnerID = str(eo.checkWinner(gameID))
             print("WINNER OF THE ROUND: " + winnerID)
@@ -513,6 +556,30 @@ class Game(tk.Frame):
         label_texts = [getattr(self, f"letter{i}") for i in range(1, 18)]
         for i in range(len(char_array)):
             label_texts[i].configure(text=char_array[i].upper())
+
+    def update_label_texts_to_default(self):
+        label_texts = [getattr(self, f"letter{i}") for i in range(1, 18)]
+        for i in range(17):
+            label_texts[i].configure(text=str(i))
+
+    def initLetters(self):
+        self.letter1 = tk.Label(self, fg="#333333", justify="center", text="1", font=FontLetters)
+        self.letter2 = tk.Label(self, fg="#333333", justify="center", text="2", font=FontLetters)
+        self.letter3 = tk.Label(self, fg="#333333", justify="center", text="3", font=FontLetters)
+        self.letter4 = tk.Label(self, fg="#333333", justify="center", text="4", font=FontLetters)
+        self.letter5 = tk.Label(self, fg="#333333", justify="center", text="5", font=FontLetters)
+        self.letter6 = tk.Label(self, fg="#333333", justify="center", text="6", font=FontLetters)
+        self.letter7 = tk.Label(self, fg="#333333", justify="center", text="7", font=FontLetters)
+        self.letter8 = tk.Label(self, fg="#333333", justify="center", text="8", font=FontLetters)
+        self.letter9 = tk.Label(self, fg="#333333", justify="center", text="9", font=FontLetters)
+        self.letter10 = tk.Label(self, fg="#333333", justify="center", text="10", font=FontLetters)
+        self.letter11 = tk.Label(self, fg="#333333", justify="center", text="11", font=FontLetters)
+        self.letter12 = tk.Label(self, fg="#333333", justify="center", text="12", font=FontLetters)
+        self.letter13 = tk.Label(self, fg="#333333", justify="center", text="13", font=FontLetters)
+        self.letter14 = tk.Label(self, fg="#333333", justify="center", text="14", font=FontLetters)
+        self.letter15 = tk.Label(self, fg="#333333", justify="center", text="15", font=FontLetters)
+        self.letter16 = tk.Label(self, fg="#333333", justify="center", text="16", font=FontLetters)
+        self.letter17 = tk.Label(self, fg="#333333", justify="center", text="17", font=FontLetters)
 
     def fixLettersPlace(self):
         self.letter1.place(x=120, y=70, width=30, height=30)
