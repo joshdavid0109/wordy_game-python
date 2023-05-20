@@ -181,7 +181,7 @@ class MainMenu(tk.Frame):
 
                 def countToZero(count):
                     timer_label.config(text=str(count - 1))  # for some reason delayed yung first countdown kaya -1
-                    if count > 0:
+                    if count >= 0:
                         new.after(1000, lambda: countToZero(count - 1))
                     else:
                         close_window()
@@ -251,6 +251,25 @@ class MainMenu(tk.Frame):
 class Game(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+
+        self.letter1 = tk.Label(self, fg="#333333", justify="center", text="1", font=FontLetters)
+        self.letter2 = tk.Label(self, fg="#333333", justify="center", text="2", font=FontLetters)
+        self.letter3 = tk.Label(self, fg="#333333", justify="center", text="3", font=FontLetters)
+        self.letter4 = tk.Label(self, fg="#333333", justify="center", text="4", font=FontLetters)
+        self.letter5 = tk.Label(self, fg="#333333", justify="center", text="5", font=FontLetters)
+        self.letter6 = tk.Label(self, fg="#333333", justify="center", text="6", font=FontLetters)
+        self.letter7 = tk.Label(self, fg="#333333", justify="center", text="7", font=FontLetters)
+        self.letter8 = tk.Label(self, fg="#333333", justify="center", text="8", font=FontLetters)
+        self.letter9 = tk.Label(self, fg="#333333", justify="center", text="9", font=FontLetters)
+        self.letter10 = tk.Label(self, fg="#333333", justify="center", text="10", font=FontLetters)
+        self.letter11 = tk.Label(self, fg="#333333", justify="center", text="11", font=FontLetters)
+        self.letter12 = tk.Label(self, fg="#333333", justify="center", text="12", font=FontLetters)
+        self.letter13 = tk.Label(self, fg="#333333", justify="center", text="13", font=FontLetters)
+        self.letter14 = tk.Label(self, fg="#333333", justify="center", text="14", font=FontLetters)
+        self.letter15 = tk.Label(self, fg="#333333", justify="center", text="15", font=FontLetters)
+        self.letter16 = tk.Label(self, fg="#333333", justify="center", text="16", font=FontLetters)
+        self.letter17 = tk.Label(self, fg="#333333", justify="center", text="17", font=FontLetters)
+
         self.controller = controller
         global gameID
         self.timerLabel = None
@@ -259,7 +278,6 @@ class Game(tk.Frame):
 
         self.readyTimer = 10
 
-        self.initLetters()
         self.fixLettersPlace()
         self.initLabels()
         self.pack()
@@ -284,7 +302,6 @@ class Game(tk.Frame):
             check = False
             while not check:
                 # print("this is running in the background")
-                time.sleep(0.5)
                 win = eo.checkMatchStatus(gameID)
                 if win != "" and win != "ready":
                     check = True
@@ -324,16 +341,20 @@ class Game(tk.Frame):
         time.sleep(1)
 
         class reqLetters(threading.Thread):
-            def __init__(self, thread_name, thread_ID, letters):
+            def __init__(self, thread_name, thread_ID, letters, game):
                 threading.Thread.__init__(self)
                 global roundLetters
                 roundLetters = letters
                 self.thread_name = thread_name
                 self.thread_ID = thread_ID
+                self.game = game
 
             def run(self):
                 global roundLetters
                 roundLetters = list(eo.requestLetters(int(gameID)))
+                # print("SHOULD BE")
+                # print(roundLetters)
+                # self.game.update_label_texts(roundLetters)
 
         class timerThread(threading.Thread):
             def __init__(self, thread_name, thread_ID, timerLabel):
@@ -360,7 +381,7 @@ class Game(tk.Frame):
 
         thread1 = timerThread("timer", 1000, self.timerLabel)
 
-        thread2 = reqLetters("reqLetters", 2, self.letters)
+        thread2 = reqLetters("reqLetters", 2, self.letters, self)
         thread2.run()
         thread1.start()
 
@@ -371,7 +392,7 @@ class Game(tk.Frame):
         print("x x")
 
         self.letters = roundLetters
-        self.update_label_texts(roundLetters)
+        # self.update_label_texts(roundLetters)
         self.availableLetters = roundLetters
         self.readyTimer = 10
         self.timerLabel.config(text=str(self.readyTimer))
@@ -409,7 +430,6 @@ class Game(tk.Frame):
 
         def after():
             print("ROUND IS OVER!!")
-            self.initLetters()
             self.checkRounds()
             time.sleep(3)
             winnerID = str(eo.checkWinner(gameID))
@@ -487,28 +507,10 @@ class Game(tk.Frame):
 
     # update letters in gui with random letters given by the server
     def update_label_texts(self, char_array):
+        print("UPDATING GUI TEXT WITH: " + str(char_array))
         label_texts = [getattr(self, f"letter{i}") for i in range(1, 18)]
         for i in range(len(char_array)):
             label_texts[i].configure(text=char_array[i].upper())
-
-    def initLetters(self):
-        self.letter1 = tk.Label(self, fg="#333333", justify="center", text="1", font=FontLetters)
-        self.letter2 = tk.Label(self, fg="#333333", justify="center", text="2", font=FontLetters)
-        self.letter3 = tk.Label(self, fg="#333333", justify="center", text="3", font=FontLetters)
-        self.letter4 = tk.Label(self, fg="#333333", justify="center", text="4", font=FontLetters)
-        self.letter5 = tk.Label(self, fg="#333333", justify="center", text="5", font=FontLetters)
-        self.letter6 = tk.Label(self, fg="#333333", justify="center", text="6", font=FontLetters)
-        self.letter7 = tk.Label(self, fg="#333333", justify="center", text="7", font=FontLetters)
-        self.letter8 = tk.Label(self, fg="#333333", justify="center", text="8", font=FontLetters)
-        self.letter9 = tk.Label(self, fg="#333333", justify="center", text="9", font=FontLetters)
-        self.letter10 = tk.Label(self, fg="#333333", justify="center", text="10", font=FontLetters)
-        self.letter11 = tk.Label(self, fg="#333333", justify="center", text="11", font=FontLetters)
-        self.letter12 = tk.Label(self, fg="#333333", justify="center", text="12", font=FontLetters)
-        self.letter13 = tk.Label(self, fg="#333333", justify="center", text="13", font=FontLetters)
-        self.letter14 = tk.Label(self, fg="#333333", justify="center", text="14", font=FontLetters)
-        self.letter15 = tk.Label(self, fg="#333333", justify="center", text="15", font=FontLetters)
-        self.letter16 = tk.Label(self, fg="#333333", justify="center", text="16", font=FontLetters)
-        self.letter17 = tk.Label(self, fg="#333333", justify="center", text="17", font=FontLetters)
 
     def fixLettersPlace(self):
         self.letter1.place(x=120, y=70, width=30, height=30)
