@@ -24,8 +24,6 @@ class daConnector:
             self.wordyGameServer = obj._narrow(WordyGame.WordyGameServer)
             global eo
             eo = obj._narrow(WordyGame.WordyGameServer)
-
-            print("CONNECTED:)\n\n")
         except Exception as e:
             traceback.print_exc()
             print(e)

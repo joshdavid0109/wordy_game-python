@@ -11,9 +11,13 @@ from tkinter.ttk import *
 
 from concurrent.futures import ThreadPoolExecutor
 
+import omniORB
+from omniORB import CORBA
+
 import Connector
 import WordyGame
 from Connector import daConnector
+import WordyGame_idl
 
 Font = ("Comic Sans MS", 15, "bold")
 FontLetters = ("Courier", 13, "bold")
@@ -35,16 +39,15 @@ global a
 timer_lock = threading.Lock()
 
 
+def getCon():
+    global connector, eo
+    connector = daConnector("localhost", 9999)  # should be read sa config
+    connector.connect()
+    eo = Connector.eo
+
 def setGameID(num):
     global gameID
     gameID = num
-
-
-class TopPlayers:
-    def __init__(self, rank, username, wins):
-        self.rank = rank
-        self.username = username
-        self.wins = wins
 
     def __str__(self):
         return f"Rank: {self.rank}, Username: {self.username}, Wins: {self.wins}"
@@ -57,12 +60,6 @@ class TopPlayers:
 
     def getWins(self):
         return self.wins
-
-
-class TopWord:
-    def __init__(self, username, word):
-        self.username = username
-        self.word = word
 
 
 class LogIn(tk.Frame):
@@ -85,27 +82,32 @@ class LogIn(tk.Frame):
         passwordTextField.place(x=120, y=50)
 
         def verify():
-            global userID
-            userId = userIdTextField.get()
+            username = userIdTextField.get()
             password = passwordTextField.get()
             try:
-                eo.login(userId, password)
-            except Exception as e:
-                print(e)
-                traceback.print_exc()
-                # userID = userId  # TODO COMMENT OUT THIS LINE THIS IS FOR THE SAKE OF TESTING LANG !!
-                userIdTextField.delete(0, "end")
-                passwordTextField.delete(0, "end")
+                getCon()
+                eo.login(username, password)
+            except WordyGame.InvalidCredentials as e:
                 messagebox.showwarning("ERROR", str(e.args[0]))
-                print(userID)
-                # controller.show_frame(MainMenu)  # TODO COMMENT OUT THIS LINE THIS IS FOR THE SAKE OF TESTING LANG !!
-                # controller.frames[Game].focus_set()
+                return
+            except WordyGame.UserAlreadyLoggedIn as e:
+                messagebox.showwarning("ERROR", str(e.args[0]))
+                return
+            except WordyGame.InvalidPassword as e:
+                messagebox.showwarning("ERROR", str(e.args[0]))
+                return
+            except Exception as e:
+                messagebox.showwarning("ERROR", "SERVER IS UNAVAILABLE, \nERROR CODE: " + str(e.args[0]))
+                return
             else:
-                print("log in OK:) ! welcome " + str(userId) + "! ")
+                print("YOU HAVE LOGGED IN AS: "+username+"\nUSER ID: "+str(eo.getPlayerID(username)))
                 global userID
-                userID = userId
+                userID = eo.getPlayerID(username)
                 controller.show_frame(MainMenu)
                 controller.frames[Game].focus_set()
+            finally:
+                userIdTextField.delete(0, "end")
+                passwordTextField.delete(0, "end")
 
         logInButton = tk.Button(self, text="ENTER", command=verify)
         logInButton.place(x=180, y=90)
@@ -148,7 +150,6 @@ class MainMenu(tk.Frame):
                 gameID = eo.playGame(int(userID))
                 print("GAME ID: " + str(gameID))
             except Exception as e:
-                traceback.print_exc()
                 print(e)
                 print("returning to main menu...")
                 warningMsg(e)
@@ -181,7 +182,7 @@ class MainMenu(tk.Frame):
 
                 def countToZero(count):
                     timer_label.config(text=str(count - 1))  # for some reason delayed yung first countdown kaya -1
-                    if count >= 0:
+                    if count > 0:
                         new.after(1000, lambda: countToZero(count - 1))
                     else:
                         close_window()
@@ -216,7 +217,7 @@ class MainMenu(tk.Frame):
                 ws = playerAsString.index("wins=") + len("wins=")
                 we = playerAsString.index(")", ws)
                 wins = int(playerAsString[ws:we])
-                top = TopPlayers(rank, username, wins)
+                top = WordyGame.TopPlayer(rank, username, wins)
                 print(top)
                 self.topPlayersList.append(top)
 
@@ -237,6 +238,7 @@ class MainMenu(tk.Frame):
 
         def showTopW():
             print("top w")
+            # WordyGame.topWord
 
         self.playGameBTN = tk.Button(self, text="PLAY GAME", command=playGameButton, font=("Helvetica", 20))
         self.playGameBTN.place(x=170, y=190, anchor='center')
