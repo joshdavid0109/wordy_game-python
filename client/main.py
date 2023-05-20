@@ -64,6 +64,15 @@ class TopWord:
         self.username = username
         self.word = word
 
+    def __str__(self):
+        return f"Player Name: {self.username}, Word: {self.word}"
+
+    def getUserName(self):
+        return self.username
+
+    def getWord(self):
+        return self.word
+
 
 class LogIn(tk.Frame):
     def __init__(self, parent, controller):
@@ -93,13 +102,13 @@ class LogIn(tk.Frame):
             except Exception as e:
                 print(e)
                 traceback.print_exc()
-                # userID = userId  # TODO COMMENT OUT THIS LINE THIS IS FOR THE SAKE OF TESTING LANG !!
+                userID = userId  # TODO COMMENT OUT THIS LINE THIS IS FOR THE SAKE OF TESTING LANG !!
                 userIdTextField.delete(0, "end")
                 passwordTextField.delete(0, "end")
                 messagebox.showwarning("ERROR", str(e.args[0]))
                 print(userID)
-                # controller.show_frame(MainMenu)  # TODO COMMENT OUT THIS LINE THIS IS FOR THE SAKE OF TESTING LANG !!
-                # controller.frames[Game].focus_set()
+                controller.show_frame(MainMenu)  # TODO COMMENT OUT THIS LINE THIS IS FOR THE SAKE OF TESTING LANG !!
+                controller.frames[Game].focus_set()
             else:
                 print("log in OK:) ! welcome " + str(userId) + "! ")
                 global userID
@@ -144,8 +153,9 @@ class MainMenu(tk.Frame):
         def playGame():
             try:
                 global userID, gameID
+                userID = eo.getPlayerID(str(userID))
                 print("USER ID: ", userID)
-                gameID = eo.playGame(int(userID))
+                gameID = eo.playGame((userID))
                 print("GAME ID: " + str(gameID))
             except Exception as e:
                 traceback.print_exc()
@@ -237,6 +247,33 @@ class MainMenu(tk.Frame):
 
         def showTopW():
             print("top w")
+            longestWords = eo.getLongestWords()
+            self.longestWords = []
+
+            for word in longestWords:
+                wordAsString = str(word)
+                us = wordAsString.index("username='") + len("username='")
+                ue = wordAsString.index("'", us)
+                username = wordAsString[us:ue]
+                ws = wordAsString.index("word=") + len("word=")
+                we = wordAsString.index(")", ws)
+                wins = str(wordAsString[ws:we])
+                top = TopWord(username, wins)
+                print(top)
+                self.longestWords.append(top)
+
+            longest_words_window = tk.Toplevel()
+            longest_words_window.title("LONGEST WORDS")
+
+            treeview = ttk.Treeview(longest_words_window, columns=("Username", "Wins"))
+            treeview.pack()
+            treeview.heading("#0", text="USERNAME")
+            treeview.heading("#1", text="WORDS")
+
+            for word in self.longestWords:
+                username = word.username
+                word = word.word
+                treeview.insert("", "end", text=str(username), values=(word))
 
         self.playGameBTN = tk.Button(self, text="PLAY GAME", command=playGameButton, font=("Helvetica", 20))
         self.playGameBTN.place(x=170, y=190, anchor='center')
@@ -459,9 +496,6 @@ class Game(tk.Frame):
             match_status = str(eo.checkMatchStatus(int(gameID)))
             print(match_status + " << this is match status")
             self.readyBTN.config(state="normal")
-            global check
-            if check:
-                self.destroy()
 
             global a
             if a or check:
