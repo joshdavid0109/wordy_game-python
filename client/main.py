@@ -50,18 +50,6 @@ def setGameID(num):
     global gameID
     gameID = num
 
-    def __str__(self):
-        return f"Rank: {self.rank}, Username: {self.username}, Wins: {self.wins}"
-
-    def getRank(self):
-        return self.rank
-
-    def getUName(self):
-        return self.username
-
-    def getWins(self):
-        return self.wins
-
 
 class TopWord:
     def __init__(self, username, word):
@@ -148,6 +136,9 @@ class MainMenu(tk.Frame):
         # play game button is clicked, run two threads
         def playGameButton():
             try:
+                print("RUNNING THREADS: ")
+                for thread in threading.enumerate():
+                    print(thread.name)
                 playGameThread = threading.Thread(target=playGame)
                 openCountdownThread = threading.Thread(target=open_countdown)
 
@@ -171,6 +162,7 @@ class MainMenu(tk.Frame):
                 gameID = eo.playGame((userID))
                 print("GAME ID: " + str(gameID))
             except Exception as e:
+                traceback.print_exc()
                 print(e)
                 print("returning to main menu...")
                 warningMsg(e)
@@ -345,10 +337,11 @@ class Game(tk.Frame):
         # threading.Thread(target=self.checkRounds).start()
 
     def run(self):
-        global win
+        global win, gameID, roundNum
         if gameID != 0:
             global check
 
+        if gameID != 0:
             check = False
             while not check:
                 # print("this is running in the background")
@@ -357,9 +350,11 @@ class Game(tk.Frame):
 
                     check = True
                     self.roundNumLab.config(text="0")
-                    self.winsLabel.config(text="0")
+                    self.winsNum.config(text="0")
                     self.roundTimerLabel.config(text="0")
                     messagebox.showinfo("WORDY", "GAME OVER! ")
+                    gameID = 0
+                    roundNum = 0
                     self.controller.show_frame(MainMenu)
                     self.controller.frames[MainMenu].focus_set()
                     return
@@ -465,6 +460,7 @@ class Game(tk.Frame):
         if a and check:
             print("need to stop")
             return
+        print("this is running in the background AFTERREADYTIMER")
         self.checkRounds()
         self.roundTimer()
         global roundLetters
