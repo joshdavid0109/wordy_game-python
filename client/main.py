@@ -111,13 +111,17 @@ class LogIn(tk.Frame):
             except WordyGame.InvalidPassword as e:
                 messagebox.showwarning("ERROR", str(e.args[0]))
                 return
+            except WordyGame.CORBA.TRANSIENT as e:
+                messagebox.showwarning("ERROR", str(e.args[0]))
+                return
             except Exception as e:
                 messagebox.showwarning("ERROR", "SERVER IS UNAVAILABLE, \nERROR CODE: " + str(e.args[0]))
                 return
             else:
                 print("YOU HAVE LOGGED IN AS: "+username+"\nUSER ID: "+str(eo.getPlayerID(username)))
                 global userID
-                userID = eo.getPlayerID(username)
+                # userID = eo.getPlayerID(username) TODO UNCOMMENT THIS
+                userID = random.randint(0, 1000) # TODO COMMENT OUT ITO FORTHE SAKE OF THE TESTING LANG <<<<<
                 controller.show_frame(MainMenu)
                 controller.frames[Game].focus_set()
             finally:
@@ -161,7 +165,7 @@ class MainMenu(tk.Frame):
         def playGame():
             try:
                 global userID, gameID
-                userID = eo.getPlayerID(str(userID))
+                #userID = eo.getPlayerID(str(userID)) TODO UNCOMMENT
                 print("USER ID: ", userID)
                 gameID = eo.playGame((userID))
                 print("GAME ID: " + str(gameID))
@@ -187,7 +191,7 @@ class MainMenu(tk.Frame):
                 new.title("MATCH")
 
                 # WAIT MUNA <1 SECOND KASI 0 MAKUKUHA NA ANO NUN TIMER PAG FIRST TYM HEHEH
-                time.sleep(0.5)
+                time.sleep(0.1)
                 print("GID" + str(gameID))
                 timerStart = eo.getTimer(int(gameID), "g")
 
@@ -211,6 +215,7 @@ class MainMenu(tk.Frame):
                 print(timerStart)
                 timer = threading.Timer(timerStart, close_countdown_thread)
                 timer.start()
+                return
 
             except Exception as e:
                 traceback.print_exc()
@@ -355,6 +360,7 @@ class Game(tk.Frame):
                     messagebox.showinfo("WORDY", "GAME OVER! ")
                     self.controller.show_frame(MainMenu)
                     self.controller.frames[MainMenu].focus_set()
+                    return
 
     def checkRounds(self):
         if gameID != 0 or not None:
@@ -422,6 +428,7 @@ class Game(tk.Frame):
                     timez -= 1
                     if timez < 0:
                         a = True
+                        return
 
         thread1 = timerThread("timer", 1000, self.timerLabel)
 
@@ -459,7 +466,7 @@ class Game(tk.Frame):
     def roundTimer(self):
 
         def roundCountDown():
-            self.update_label_texts(roundLetters)
+            # self.update_label_texts(roundLetters)
             rc = False
             # print("this is running in the background1")
             while not rc:
@@ -518,8 +525,9 @@ class Game(tk.Frame):
         global a
 
         print("ROUND TIMER START AT: " + str(roundTimer))
-
+        global roundLetters
         if roundTimer != 10:
+            self.update_label_texts(roundLetters)
             threading.Thread(target=roundCountDown()).start()
 
     def handle_key(self, event):
