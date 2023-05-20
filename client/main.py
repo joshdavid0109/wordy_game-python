@@ -29,6 +29,8 @@ userID = None
 roundNum = 0
 winsNum = 0
 roundLetters = []
+global check
+global a
 
 timer_lock = threading.Lock()
 
@@ -168,7 +170,7 @@ class MainMenu(tk.Frame):
                 new.title("MATCH")
 
                 # WAIT MUNA <1 SECOND KASI 0 MAKUKUHA NA ANO NUN TIMER PAG FIRST TYM HEHEH
-                time.sleep(0.2)
+                time.sleep(0.5)
                 print("GID" + str(gameID))
                 timerStart = eo.getTimer(int(gameID), "g")
 
@@ -231,7 +233,7 @@ class MainMenu(tk.Frame):
                 rank = player.rank
                 username = player.username
                 wins = player.wins
-                treeview.insert("", "end", text=str(rank),values=(username, wins))
+                treeview.insert("", "end", text=str(rank), values=(username, wins))
 
         def showTopW():
             print("top w")
@@ -276,6 +278,8 @@ class Game(tk.Frame):
 
     def run(self):
         global win
+        global check
+
         if gameID != 0:
             check = False
             while not check:
@@ -284,6 +288,9 @@ class Game(tk.Frame):
                 win = eo.checkMatchStatus(gameID)
                 if win != "" and win != "ready":
                     check = True
+                    self.roundNumLab.config(text="0")
+                    self.winsLabel.config(text="0")
+                    self.roundTimerLabel.config(text="0")
                     messagebox.showinfo("WORDY", "GAME OVER! ")
                     self.controller.show_frame(MainMenu)
                     self.controller.frames[MainMenu].focus_set()
@@ -312,8 +319,6 @@ class Game(tk.Frame):
         print("PRE ROUND COUNTDOWN STARTED")
         global gameID, roundLetters
 
-        roundLetters = list(eo.requestLetters(int(gameID)))
-
         print("THREAD TIMER START")
         print(int(eo.getTimer(int(gameID), "r")))
         time.sleep(1)
@@ -329,8 +334,6 @@ class Game(tk.Frame):
             def run(self):
                 global roundLetters
                 roundLetters = list(eo.requestLetters(int(gameID)))
-                print("this run yes")
-                print(roundLetters)  # printing naman letters, gawin lang siguro itong global para maipasa sa labas ng class na to and maupdate table
 
         class timerThread(threading.Thread):
             def __init__(self, thread_name, thread_ID, timerLabel):
@@ -340,7 +343,9 @@ class Game(tk.Frame):
                 self.thread_ID = thread_ID
 
                 # helper function to execute timer countdown // check tester.py
+
             def run(self):
+                global a
                 a = False
                 global roundLetters
                 roundLetters = list(eo.requestLetters(int(gameID)))
@@ -356,15 +361,15 @@ class Game(tk.Frame):
         thread1 = timerThread("timer", 1000, self.timerLabel)
 
         thread2 = reqLetters("reqLetters", 2, self.letters)
+        thread2.run()
         thread1.start()
-        thread2.start()
 
         thread1.join()
-        thread2.join()
 
         print("updating table")
         print(roundLetters)
         print("x x")
+
         self.letters = roundLetters
         self.update_label_texts(roundLetters)
         self.availableLetters = roundLetters
@@ -418,7 +423,6 @@ class Game(tk.Frame):
                 print("YOU WON THE ROUND, WINS: " + str(self.numberOfWins))
                 self.updateWinsNum()
 
-
             if winnerID == str("Game Over"):
                 print("GAME OVER!")
                 if str(eo.checkMatchStatus(int(gameID))) == str(userID):
@@ -429,20 +433,29 @@ class Game(tk.Frame):
                     print("\n\n")
 
             print()
+            global roundLetters
+            roundLetters = []
             match_status = str(eo.checkMatchStatus(int(gameID)))
             print(match_status + " << this is match status")
+            self.readyBTN.config(state="normal")
+
+            global a
+            if a or check:
+                return
 
             print("PRESS READY!!")
-            self.readyBTN.config(state="normal")
 
         self.readyBTN.config(state="disabled")
         # eo.getTimer(gameID, "round")
         # time.sleep(0.1)
         roundTimer = eo.getTimer(int(gameID), "round")
         print()
+        global a
+
         print("ROUND TIMER START AT: " + str(roundTimer))
 
-        threading.Thread(target=roundCountDown()).start()
+        if roundTimer != 10:
+            threading.Thread(target=roundCountDown()).start()
 
     def handle_key(self, event):
         if event.keysym == "Return":
@@ -469,6 +482,7 @@ class Game(tk.Frame):
                 current_text = self.textWordy.cget("text")
                 self.textWordy.config(text=current_text + pressed_letter)
                 self.availableLetters.remove(pressed_letter)
+        self.availableLetters = roundLetters.copy()
         self.textWordy.after(1, self.textWordy.update())
 
     # update letters in gui with random letters given by the server
