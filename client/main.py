@@ -511,19 +511,16 @@ class Game(tk.Frame):
             print(match_status + " << this is match status")
             self.readyBTN.config(state="normal")
 
-            global a
-            if a or check:
-                return
-
             print("PRESS READY!!")
 
+        global a
+        if a and check:
+            return
         self.readyBTN.config(state="disabled")
         # eo.getTimer(gameID, "round")
         # time.sleep(0.1)
         roundTimer = eo.getTimer(int(gameID), "round")
         print()
-        global a
-
         print("ROUND TIMER START AT: " + str(roundTimer))
         global roundLetters
         if roundTimer != 10:
