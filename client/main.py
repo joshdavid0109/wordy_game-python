@@ -347,8 +347,8 @@ class Game(tk.Frame):
             def run(self):
                 global a
                 a = False
-                global roundLetters
-                roundLetters = list(eo.requestLetters(int(gameID)))
+                # global roundLetters
+                # roundLetters = list(eo.requestLetters(int(gameID)))
                 while not a:
                     timez = eo.getTimer(gameID, "r")
                     print(timez)
@@ -361,7 +361,7 @@ class Game(tk.Frame):
         thread1 = timerThread("timer", 1000, self.timerLabel)
 
         thread2 = reqLetters("reqLetters", 2, self.letters)
-        thread2.run()
+        thread2.start()
         thread1.start()
 
         thread1.join()
@@ -411,6 +411,7 @@ class Game(tk.Frame):
             print("ROUND IS OVER!!")
             self.initLetters()
             self.checkRounds()
+            self.update_label_texts_to_default()
             time.sleep(3)
             winnerID = str(eo.checkWinner(gameID))
             print("WINNER OF THE ROUND: " + winnerID)
@@ -438,6 +439,9 @@ class Game(tk.Frame):
             match_status = str(eo.checkMatchStatus(int(gameID)))
             print(match_status + " << this is match status")
             self.readyBTN.config(state="normal")
+            global check
+            if check:
+                self.destroy()
 
             global a
             if a or check:
@@ -490,6 +494,11 @@ class Game(tk.Frame):
         label_texts = [getattr(self, f"letter{i}") for i in range(1, 18)]
         for i in range(len(char_array)):
             label_texts[i].configure(text=char_array[i].upper())
+
+    def update_label_texts_to_default(self):
+        label_texts = [getattr(self, f"letter{i}") for i in range(1, 18)]
+        for i in range(17):
+            label_texts[i].configure(text=str(i))
 
     def initLetters(self):
         self.letter1 = tk.Label(self, fg="#333333", justify="center", text="1", font=FontLetters)
