@@ -1,19 +1,21 @@
-## _**WORDY GAME**_
+# _**WORDY GAME**_
 
-## AUTHORS
-AGBAYANI, Rey John
+### **GROUP 7**
 
-ANDAYA, Trisha
+### AUTHORS
+AGBAYANI, Rey John                   `2225189@slu.edu.ph`
 
-DAVID, Joshua Daniel 
+ANDAYA, Trisha                       `2211741@slu.edu.ph`
 
-DE GUZMAN, Alastair Zeph
+DAVID, Joshua Daniel                 `2222551@slu.edu.ph`
 
-DOMANTAY, Darren Franz
+DE GUZMAN, Alastair Zeph             `2215424@slu.edu.ph`
 
-TARLIT, Ariel Jr.
+DOMANTAY, Darren Franz               `2225292@slu.edu.ph`
 
-VILLALOBOS, Maervin
+TARLIT, Ariel Jr.                    `2221621@slu.edu.ph`
+
+VILLALOBOS, Maervin                  `2211353@slu.edu.ph`
 
 ## Necessary files
 
@@ -50,12 +52,14 @@ Install the latest version of the links provided
 
 ## Setting up the project
 1. Open PyCharm, load the project
-2. Edit Run/Debug configurations for main.py (Click Add Configuration on the right top side)
+2. Edit Run/Debug configurations for browse for the directory of main.py. `<top level directory>/client/main.py` (Click Add Configuration on the right top side)
 3. Click the add button and look for Python
 4. On the script path, type main.py.
 5. On the parameters, type
 
-**      -ORBInitRef NameService=corbaname::localhost:9999**
+      **-ORBInitRef NameService=corbaname::localhost:9999**
+
+
 ```
 Make sure to change the localhost and port(9999) as what is used by the server program.
 ```
@@ -63,5 +67,5 @@ Make sure to change the localhost and port(9999) as what is used by the server p
 
 ## Running the client program
 1. Make sure that the orb daemon and java server is running on the server's machine
-2. Run main.py, and that's it. Login a registered user and Enjoy the Wordy game!
+2. Run main.py, and that's it. Login a registered user and enjoy the Wordy game!
 
