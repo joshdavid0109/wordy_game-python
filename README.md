@@ -1,92 +1,67 @@
-# 2022-2_9328-finGrp7_Other
+## _**WORDY GAME**_
 
+## AUTHORS
+AGBAYANI, Rey John
 
+ANDAYA, Trisha
 
-## Getting started
+DAVID, Joshua Daniel 
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+DE GUZMAN, Alastair Zeph
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+DOMANTAY, Darren Franz
 
-## Add your files
+TARLIT, Ariel Jr.
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+VILLALOBOS, Maervin
+
+## Necessary files
+
+- [ ] [Python](https://www.python.org/downloads/) 
+- [ ] [PyCharm](https://www.jetbrains.com/pycharm/download/#section=windows) 
 
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/rbmakil/2022-2_9328-fingrp7_other.git
-git branch -M main
-git push -uf origin main
+Install the latest version of the links provided
 ```
 
-## Integrate with your tools
+## Python Installation
+1. After installing Python,
+2. Click on the "Downloads" tab located on the top navigation bar.
+3. On the Downloads page, you will see the latest version of Python available for download. Choose the version that corresponds to your operating system (e.g., Windows, macOS, or Linux). It's recommended to download the stable release, which is usually displayed prominently.
+4. Click on the download link for the selected version of Python. You will be redirected to the download page.
+5. Scroll down the page and locate the installer appropriate for your operating system. For Windows, download the executable installer (e.g., Python 3.9.5.exe). For macOS, download the macOS installer (e.g., Python 3.9.5 macOS 64-bit installer). For Linux, the process may vary depending on your distribution, but you can usually find Python in the package manager or download the source code from the Python website.
+6. Once the installer file is downloaded, run it to start the installation process.
+7. On the installation wizard, make sure to check the box that says "Add Python to PATH" (Windows) or "Install Python to the standard locations" (macOS). This step ensures that Python is accessible from the command line or terminal.
+8. Proceed with the installation by following the on-screen instructions. You can typically accept the default settings unless you have specific requirements.
+9. After the installation is complete, open the command prompt (Windows) or terminal (macOS/Linux) and type python --version to verify that Python is installed correctly. You should see the version number of Python displayed.
 
-- [ ] [Set up project integrations](https://gitlab.com/rbmakil/2022-2_9328-fingrp7_other/-/settings/integrations)
+## PyCharm Installation
+1. On the PyCharm homepage, you will see the various editions available for download. Choose the edition that suits your needs (e.g., PyCharm Community or PyCharm Professional). The Community edition is free and offers essential features, while the Professional edition includes additional advanced functionality and requires a license.
+2. Click on the "Download" button for your chosen edition. You will be redirected to the download page.
+3. On the download page, select the operating system you're using (e.g., Windows, macOS, or Linux). Choose the appropriate version for your OS.
+4. Click on the download link to start the download process. The installer file will be saved to your computer.
+5. Once the download is complete, locate the installer file and run it.
+6. Follow the installation wizard's instructions. You can generally accept the default settings unless you have specific preferences.
+7. During the installation, you may be asked to select additional components or configure settings. Make your choices based on your needs or leave them as default.
+8. After the installation is complete, you can launch PyCharm from the Start menu (Windows) or the Applications folder (macOS). The first time you run PyCharm, it may prompt you to import settings or customize your preferences.
+9. PyCharm will ask you to choose the theme and keymap preferences. You can select the options you prefer or keep the defaults.
+10. Once you've completed the initial setup, PyCharm is ready to use.
 
-## Collaborate with your team
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+## Setting up the project
+1. Open PyCharm, load the project
+2. Edit Run/Debug configurations for main.py (Click Add Configuration on the right top side)
+3. Click the add button and look for Python
+4. On the script path, type main.py.
+5. On the parameters, type
 
-## Test and Deploy
+**      -ORBInitRef NameService=corbaname::localhost:9999**
+```
+Make sure to change the localhost and port(9999) as what is used by the server program.
+```
+6. Click Apply, then close the window.
 
-Use the built-in continuous integration in GitLab.
+## Running the client program
+1. Make sure that the orb daemon and java server is running on the server's machine
+2. Run main.py, and that's it. Login a registered user and Enjoy the Wordy game!
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
