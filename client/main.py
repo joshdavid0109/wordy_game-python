@@ -137,6 +137,7 @@ class MainMenu(tk.Frame):
         def playGameButton():
             try:
                 print("RUNNING THREADS: ")
+
                 for thread in threading.enumerate():
                     print(thread.name)
                 playGameThread = threading.Thread(target=playGame)
@@ -345,13 +346,15 @@ class Game(tk.Frame):
             check = False
             while not check:
                 # print("this is running in the background")
+                self.roundNum = eo.getRound(gameID)
+                self.roundNumLab.config(text=str(self.roundNum))
                 win = eo.checkMatchStatus(gameID)
                 if win != "" and win != "ready":
-
                     check = True
-                    self.roundNumLab.config(text="0")
+                    self.roundNumLab.config(text="1")
                     self.winsNum.config(text="0")
-                    self.roundTimerLabel.config(text="0")
+                    self.roundTimerLabel.config(text="10")
+                    self.numberOfWins = 0
                     messagebox.showinfo("WORDY", "GAME OVER! ")
                     gameID = 0
                     roundNum = 0
@@ -444,8 +447,10 @@ class Game(tk.Frame):
         self.availableLetters = roundLetters
         self.readyTimer = 10
         self.timerLabel.config(text=str(self.readyTimer))
-        global a
+        global a, check
         if a and check:
+            a = False
+            check =False
             print("need to stop")
             return
         self.afterReadyTimer()
@@ -455,17 +460,18 @@ class Game(tk.Frame):
         return
 
     def afterReadyTimer(self):
-        print("READY TIMER FINISH, ROUND START NA")
-        global a
+        global a, check
         if a and check:
             print("need to stop")
+            a = False
+            check = False
             return
+        print("READY TIMER FINISH, ROUND START NA")
         print("this is running in the background AFTERREADYTIMER")
         self.checkRounds()
         self.roundTimer()
         global roundLetters
         roundLetters = list(eo.requestLetters(int(gameID)))
-        self.update_label_texts(roundLetters)
         self.availableLetters = roundLetters.copy()
 
     # the 10 second round timer yung sa round itself
@@ -512,6 +518,8 @@ class Game(tk.Frame):
 
             print()
             global roundLetters
+            rc = False
+
             roundLetters = []
             match_status = str(eo.checkMatchStatus(int(gameID)))
             print(match_status + " << this is match status")
@@ -519,7 +527,10 @@ class Game(tk.Frame):
 
             print("PRESS READY!!")
 
-        global a
+        self.roundNumLab.config(text="1")
+        self.roundTimerLabel.config(text="10")
+
+        global a, check
         if a and check:
             print("need to stop")
             return
@@ -530,7 +541,13 @@ class Game(tk.Frame):
         # eo.getTimer(gameID, "round")
         # time.sleep(0.1)
         roundTimer = eo.getTimer(int(gameID), "round")
-        print()
+
+        if a and check:
+            print("need to stop")
+            a = False
+            check = False
+            return
+
         print("ROUND TIMER START AT: " + str(roundTimer))
         global roundLetters
         if roundTimer != 10:
@@ -562,8 +579,8 @@ class Game(tk.Frame):
                 current_text = self.textWordy.cget("text")
                 self.textWordy.config(text=current_text + pressed_letter)
                 self.availableLetters.remove(pressed_letter)
-        self.availableLetters = roundLetters.copy()
         self.textWordy.after(1, self.textWordy.update())
+        self.availableLetters = roundLetters.copy()
 
     # update letters in gui with random letters given by the server
     def update_label_texts(self, char_array):
