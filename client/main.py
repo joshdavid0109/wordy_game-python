@@ -27,6 +27,7 @@ FontLetterz = ("Helvetica", 12, "bold")
 connector = daConnector("localhost", 9999)  # should be read sa config
 connector.connect()
 
+username = None
 eo = Connector.eo
 gameID = 0
 userID = None
@@ -36,7 +37,6 @@ roundLetters = []
 check = None
 a = None
 
-
 timer_lock = threading.Lock()
 
 
@@ -45,6 +45,7 @@ def getCon():
     connector = daConnector("localhost", 9999)  # should be read sa config
     connector.connect()
     eo = Connector.eo
+
 
 def setGameID(num):
     global gameID
@@ -86,6 +87,7 @@ class LogIn(tk.Frame):
         passwordTextField.place(x=120, y=50)
 
         def verify():
+            global username
             username = userIdTextField.get()
             password = passwordTextField.get()
             try:
@@ -100,17 +102,17 @@ class LogIn(tk.Frame):
             except WordyGame.InvalidPassword as e:
                 messagebox.showwarning("ERROR", str(e.args[0]))
                 return
-            except WordyGame.CORBA.TRANSIENT as e:
-                messagebox.showwarning("ERROR", str(e.args[0]))
+            except CORBA.TRANSIENT as e:
+                messagebox.showwarning("ERROR", "SERVER IS UNAVAILABLE")
                 return
             except Exception as e:
-                messagebox.showwarning("ERROR", "SERVER IS UNAVAILABLE, \nERROR CODE: " + str(e.args[0]))
+                traceback.print_exc()
+                messagebox.showwarning("ERROR", "ERROR CODE: " + str(e.args[0]))
                 return
             else:
-                print("YOU HAVE LOGGED IN AS: "+username+"\nUSER ID: "+str(eo.getPlayerID(username)))
+                print("YOU HAVE LOGGED IN AS: " + username + "\nUSER ID: " + str(eo.getPlayerID(username)))
                 global userID
-                # userID = eo.getPlayerID(username) TODO UNCOMMENT THIS
-                userID = random.randint(0, 1000) # TODO COMMENT OUT ITO FORTHE SAKE OF THE TESTING LANG <<<<<
+                userID = eo.getPlayerID(username)
                 controller.show_frame(MainMenu)
                 controller.frames[Game].focus_set()
             finally:
@@ -131,15 +133,8 @@ class MainMenu(tk.Frame):
         self.wordyLabel.place(x=170, y=50, anchor="center")
         self.topPlayersList = []
 
-        # wordyLabel.configure(anchor="center")
-
-        # play game button is clicked, run two threads
         def playGameButton():
             try:
-                print("RUNNING THREADS: ")
-
-                for thread in threading.enumerate():
-                    print(thread.name)
                 playGameThread = threading.Thread(target=playGame)
                 openCountdownThread = threading.Thread(target=open_countdown)
 
@@ -157,18 +152,16 @@ class MainMenu(tk.Frame):
 
         def playGame():
             try:
-                global userID, gameID
-                #userID = eo.getPlayerID(str(userID)) TODO UNCOMMENT
+                global userID, gameID, username
+                userID = eo.getPlayerID(str(username))
                 print("USER ID: ", userID)
-                gameID = eo.playGame((userID))
+                gameID = eo.playGame(int(userID))
                 print("GAME ID: " + str(gameID))
             except Exception as e:
                 traceback.print_exc()
                 print(e)
-                print("returning to main menu...")
                 warningMsg(e)
             else:
-                # put code ng game here
                 if gameID != 0:
                     setGameID(gameID)
                     controller.show_frame(Game)
@@ -179,19 +172,14 @@ class MainMenu(tk.Frame):
         def open_countdown():
             try:
                 self.playGameBTN.config(state="disabled")
-                print("exec b")
                 new = Toplevel(self)
                 new.geometry("350x150")
                 new.title("MATCH")
-
-                # WAIT MUNA <1 SECOND KASI 0 MAKUKUHA NA ANO NUN TIMER PAG FIRST TYM HEHEH
                 time.sleep(0.1)
-                print("GID" + str(gameID))
                 timerStart = eo.getTimer(int(gameID), "g")
 
                 def close_window():
                     self.playGameBTN.config(state="normal")
-                    print("window closed")
                     new.destroy()
 
                 def countToZero(count):
@@ -206,80 +194,97 @@ class MainMenu(tk.Frame):
 
                 new.after(1000, lambda: countToZero(timerStart))
 
-                print(timerStart)
                 timer = threading.Timer(timerStart, close_countdown_thread)
                 timer.start()
                 return
 
+            except CORBA.TRANSIENT as e:
+                messagebox.showwarning("ERROR", "SERVER UNAVAILABLE")
+                quit()
+                return
+
             except Exception as e:
                 traceback.print_exc()
-                print(e)
                 warningMsg(e)
 
         def showTopP():
-            print("top p")
-            topPlayerList = eo.getTopPlayers()
-            self.topPlayersList = []
+            try:
+                topPlayerList = eo.getTopPlayers()
+                self.topPlayersList = []
 
-            for player in topPlayerList:
-                playerAsString = str(player)
-                rs = playerAsString.index("rank=") + len("rank=")
-                re = playerAsString.index(",", rs)
-                rank = int(playerAsString[rs:re])
-                us = playerAsString.index("username='") + len("username='")
-                ue = playerAsString.index("'", us)
-                username = playerAsString[us:ue]
-                ws = playerAsString.index("wins=") + len("wins=")
-                we = playerAsString.index(")", ws)
-                wins = int(playerAsString[ws:we])
-                top = WordyGame.TopPlayer(rank, username, wins)
-                print(top)
-                self.topPlayersList.append(top)
+                for player in topPlayerList:
+                    playerAsString = str(player)
+                    rs = playerAsString.index("rank=") + len("rank=")
+                    re = playerAsString.index(",", rs)
+                    rank = int(playerAsString[rs:re])
+                    us = playerAsString.index("username='") + len("username='")
+                    ue = playerAsString.index("'", us)
+                    username = playerAsString[us:ue]
+                    ws = playerAsString.index("wins=") + len("wins=")
+                    we = playerAsString.index(")", ws)
+                    wins = int(playerAsString[ws:we])
+                    top = WordyGame.TopPlayer(rank, username, wins)
+                    self.topPlayersList.append(top)
 
-            top_players_window = tk.Toplevel()
-            top_players_window.title("TOP PLAYERS")
+                top_players_window = tk.Toplevel()
+                top_players_window.title("TOP PLAYERS")
 
-            treeview = ttk.Treeview(top_players_window, columns=("Rank", "Username", "Wins"))
-            treeview.pack()
-            treeview.heading("#0", text="RANK")
-            treeview.heading("#1", text="USERNAME")
-            treeview.heading("#2", text="WINS")
+                treeview = ttk.Treeview(top_players_window, columns=("Rank", "Username", "Wins"))
+                treeview.pack()
+                treeview.heading("#0", text="RANK")
+                treeview.heading("#1", text="USERNAME")
+                treeview.heading("#2", text="WINS")
 
-            for player in self.topPlayersList:
-                rank = player.rank
-                username = player.username
-                wins = player.wins
-                treeview.insert("", "end", text=str(rank), values=(username, wins))
+                for player in self.topPlayersList:
+                    rank = player.rank
+                    username = player.username
+                    wins = player.wins
+                    treeview.insert("", "end", text=str(rank), values=(username, wins))
+            except CORBA.TRANSIENT as e:
+
+                messagebox.showwarning("ERROR", "SERVER UNAVAILABLE")
+                quit()
+
+                return
+            except Exception as e:
+                warningMsg(e)
+                return
 
         def showTopW():
-            print("top w")
-            longestWords = eo.getLongestWords()
-            self.longestWords = []
+            try:
+                longestWords = eo.getLongestWords()
+                self.longestWords = []
 
-            for word in longestWords:
-                wordAsString = str(word)
-                us = wordAsString.index("username='") + len("username='")
-                ue = wordAsString.index("'", us)
-                username = wordAsString[us:ue]
-                ws = wordAsString.index("word=") + len("word=")
-                we = wordAsString.index(")", ws)
-                wins = str(wordAsString[ws:we])
-                top = TopWord(username, wins)
-                print(top)
-                self.longestWords.append(top)
+                for word in longestWords:
+                    wordAsString = str(word)
+                    us = wordAsString.index("username='") + len("username='")
+                    ue = wordAsString.index("'", us)
+                    username = wordAsString[us:ue]
+                    ws = wordAsString.index("word=") + len("word=")
+                    we = wordAsString.index(")", ws)
+                    wins = str(wordAsString[ws:we])
+                    top = TopWord(username, wins)
+                    self.longestWords.append(top)
 
-            longest_words_window = tk.Toplevel()
-            longest_words_window.title("LONGEST WORDS")
+                longest_words_window = tk.Toplevel()
+                longest_words_window.title("LONGEST WORDS")
 
-            treeview = ttk.Treeview(longest_words_window, columns=("Username", "Wins"))
-            treeview.pack()
-            treeview.heading("#0", text="USERNAME")
-            treeview.heading("#1", text="WORDS")
+                treeview = ttk.Treeview(longest_words_window, columns=("Username", "Wins"))
+                treeview.pack()
+                treeview.heading("#0", text="USERNAME")
+                treeview.heading("#1", text="WORDS")
 
-            for word in self.longestWords:
-                username = word.username
-                word = word.word
-                treeview.insert("", "end", text=str(username), values=(word))
+                for word in self.longestWords:
+                    username = word.username
+                    word = word.word
+                    treeview.insert("", "end", text=str(username), values=(word))
+            except CORBA.TRANSIENT as e:
+                messagebox.showwarning("ERROR", "SERVER UNAVAILABLE")
+                quit()
+                return
+            except Exception as e:
+                warningMsg(e)
+                return
 
         self.playGameBTN = tk.Button(self, text="PLAY GAME", command=playGameButton, font=("Helvetica", 20))
         self.playGameBTN.place(x=170, y=190, anchor='center')
@@ -294,29 +299,11 @@ class MainMenu(tk.Frame):
 class Game(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-
-        self.letter1 = tk.Label(self, fg="#333333", justify="center", text="1", font=FontLetters)
-        self.letter2 = tk.Label(self, fg="#333333", justify="center", text="2", font=FontLetters)
-        self.letter3 = tk.Label(self, fg="#333333", justify="center", text="3", font=FontLetters)
-        self.letter4 = tk.Label(self, fg="#333333", justify="center", text="4", font=FontLetters)
-        self.letter5 = tk.Label(self, fg="#333333", justify="center", text="5", font=FontLetters)
-        self.letter6 = tk.Label(self, fg="#333333", justify="center", text="6", font=FontLetters)
-        self.letter7 = tk.Label(self, fg="#333333", justify="center", text="7", font=FontLetters)
-        self.letter8 = tk.Label(self, fg="#333333", justify="center", text="8", font=FontLetters)
-        self.letter9 = tk.Label(self, fg="#333333", justify="center", text="9", font=FontLetters)
-        self.letter10 = tk.Label(self, fg="#333333", justify="center", text="10", font=FontLetters)
-        self.letter11 = tk.Label(self, fg="#333333", justify="center", text="11", font=FontLetters)
-        self.letter12 = tk.Label(self, fg="#333333", justify="center", text="12", font=FontLetters)
-        self.letter13 = tk.Label(self, fg="#333333", justify="center", text="13", font=FontLetters)
-        self.letter14 = tk.Label(self, fg="#333333", justify="center", text="14", font=FontLetters)
-        self.letter15 = tk.Label(self, fg="#333333", justify="center", text="15", font=FontLetters)
-        self.letter16 = tk.Label(self, fg="#333333", justify="center", text="16", font=FontLetters)
-        self.letter17 = tk.Label(self, fg="#333333", justify="center", text="17", font=FontLetters)
-
+        self.initLetters()
         self.controller = controller
         global gameID
         self.timerLabel = None
-        self.textWordy = tk.Label(self, fg="#333333", justify="center", text="", font=Font)
+        self.textWordy = tk.Label(self, fg="#333333", justify="center", text="", font=FontLetters)
         self.textWordy.place(x=130, y=280)
 
         self.readyTimer = 10
@@ -338,73 +325,108 @@ class Game(tk.Frame):
         # threading.Thread(target=self.checkRounds).start()
 
     def run(self):
-        global win, gameID, roundNum
-        if gameID != 0:
-            global check
+        try:
+            global win, gameID, roundNum
+            if gameID != 0:
+                global check
 
-        if gameID != 0:
-            check = False
-            while not check:
-                # print("this is running in the background")
-                self.roundNum = eo.getRound(gameID)
-                self.roundNumLab.config(text=str(self.roundNum))
-                win = eo.checkMatchStatus(gameID)
-                if win != "" and win != "ready":
-                    check = True
-                    self.roundNumLab.config(text="1")
-                    self.winsNum.config(text="0")
-                    self.roundTimerLabel.config(text="10")
-                    self.numberOfWins = 0
-                    messagebox.showinfo("WORDY", "GAME OVER! ")
-                    gameID = 0
-                    roundNum = 0
-                    self.controller.show_frame(MainMenu)
-                    self.controller.frames[MainMenu].focus_set()
-                    return
+            if gameID != 0:
+                check = False
+                while not check:
+                    self.roundNum = eo.getRound(gameID)
+                    self.roundNumLab.config(text=str(self.roundNum))
+                    win = eo.checkMatchStatus(gameID)
+                    if win != "" and win != "ready":
+                        check = True
+                        self.roundNumLab.config(text="1")
+                        self.winsNum.config(text="0")
+                        self.roundTimerLabel.config(text="10")
+                        self.numberOfWins = 0
+                        messagebox.showinfo("WORDY", "GAME OVER! ")
+                        gameID = 0
+                        roundNum = 0
+                        self.controller.show_frame(MainMenu)
+                        self.controller.frames[MainMenu].focus_set()
+                        return
+        except CORBA.TRANSIENT as e:
+            messagebox.showwarning("ERROR", "SERVER IS UNAVAILABLE")
+            quit()
+            return
+        except Exception as e:
+            warningMsg(e)
+            return
 
     def checkRounds(self):
-        if gameID != 0 or not None:
-            print("ROUND:" + str(self.roundNum) + " OF GAME: " + str(gameID))
-            self.roundNum = eo.getRound(gameID)
-            self.roundNumLab.config(text=str(self.roundNum))
+        try:
+            if gameID != 0 or not None:
+                print("ROUND:" + str(self.roundNum) + " OF GAME: " + str(gameID))
+                self.roundNum = eo.getRound(gameID)
+                self.roundNumLab.config(text=str(self.roundNum))
+        except CORBA.TRANSIENT as e:
+            messagebox.showwarning("ERROR", "SERVER IS UNAVAILABLE")
+            quit()
+            return
+        except Exception as e:
+            warningMsg(e)
+            return
 
     def updateWinsNum(self):
         self.winsNum.config(text=str(self.numberOfWins))
 
     # code executed when ready button is clicked ^^
     def readyBtnClicked(self):
-        self.roundNum = eo.getRound(gameID)
-        print("STARTING - ROUND: " + str(self.roundNum) + " OF GAME: " + str(gameID))
-        self.readyBTN.config(state="disabled")
-        eo.ready(int(userID), int(gameID))
-
-        timer_thread = threading.Thread(target=self.timer)
-        timer_thread.start()
+        try:
+            self.roundNum = eo.getRound(gameID)
+            print("STARTING - ROUND: " + str(self.roundNum) + " OF GAME: " + str(gameID))
+            self.readyBTN.config(state="disabled")
+            eo.ready(int(userID), int(gameID))
+            timer_thread = threading.Thread(target=self.timer)
+            timer_thread.start()
+        except CORBA.TRANSIENT as e:
+            messagebox.showwarning("ERROR", "SERVER IS UNAVAILABLE")
+            quit()
+            return
+        except Exception as e:
+            warningMsg(e)
+            return
 
     # before round, after ready btn is clicked
     def timer(self):
-        print("PRE ROUND COUNTDOWN STARTED")
-        global gameID, roundLetters
-
-        print("THREAD TIMER START")
-        print(int(eo.getTimer(int(gameID), "r")))
-        time.sleep(1)
+        try:
+            global gameID, roundLetters
+            int(eo.getTimer(int(gameID), "r"))
+            time.sleep(1)
+        except CORBA.TRANSIENT as e:
+            messagebox.showwarning("ERROR", "SERVER IS UNAVAILABLE")
+            quit()
+            return
+        except Exception as e:
+            warningMsg(e)
 
         class reqLetters(threading.Thread):
             def __init__(self, thread_name, thread_ID, letters, game):
-                threading.Thread.__init__(self)
-                global roundLetters
-                roundLetters = letters
-                self.thread_name = thread_name
-                self.thread_ID = thread_ID
-                self.game = game
+                try:
+                    threading.Thread.__init__(self)
+                    global roundLetters
+                    roundLetters = letters
+                    self.thread_name = thread_name
+                    self.thread_ID = thread_ID
+                    self.game = game
+                except Exception as e:
+                    warningMsg(e)
+                    return
 
             def run(self):
-                global roundLetters
-                roundLetters = list(eo.requestLetters(int(gameID)))
-                # print("SHOULD BE")
-                # print(roundLetters)
-                # self.game.update_label_texts(roundLetters)
+                try:
+                    global roundLetters
+                    roundLetters = list(eo.requestLetters(int(gameID)))
+                except CORBA.TRANSIENT as e:
+                    messagebox.showwarning("ERROR", "SERVER IS UNAVAILABLE")
+                    quit()
+                    return
+                except Exception as e:
+                    warningMsg(e)
+                    return
 
         class timerThread(threading.Thread):
             def __init__(self, thread_name, thread_ID, timerLabel):
@@ -416,156 +438,168 @@ class Game(tk.Frame):
                 # helper function to execute timer countdown // check tester.py
 
             def run(self):
-                global a
+                try:
+                    global a
+                    a = False
+                    while not a:
+                        timez = eo.getTimer(gameID, "r")
+                        self.timerLabel.config(text=str(timez))
+                        t.sleep(1)
+                        timez -= 1
+                        if timez < 0:
+                            a = True
+                            return
+                except CORBA.TRANSIENT as e:
+                    messagebox.showwarning("ERROR", "SERVER IS UNAVAILABLE")
+                    quit()
+                    return
+                except Exception as e:
+                    warningMsg(e)
+                    return
+
+        try:
+            thread1 = timerThread("timer", 1000, self.timerLabel)
+            thread2 = reqLetters("reqLetters", 2, self.letters, self)
+            thread2.start()
+            thread1.start()
+            thread1.join()
+            self.letters = roundLetters
+            self.availableLetters = roundLetters
+            self.readyTimer = 10
+            self.timerLabel.config(text=str(self.readyTimer))
+            global a, check
+            if a and check:
                 a = False
-                # global roundLetters
-                # roundLetters = list(eo.requestLetters(int(gameID)))
-                while not a:
-                    timez = eo.getTimer(gameID, "r")
-                    print(timez)
-                    self.timerLabel.config(text=str(timez))
-                    t.sleep(1)
-                    timez -= 1
-                    if timez < 0:
-                        a = True
-                        return
-
-        thread1 = timerThread("timer", 1000, self.timerLabel)
-
-        thread2 = reqLetters("reqLetters", 2, self.letters, self)
-        thread2.start()
-        thread1.start()
-
-        thread1.join()
-
-        print("updating table")
-        print(roundLetters)
-        print("x x")
-
-        self.letters = roundLetters
-        # self.update_label_texts(roundLetters)
-        self.availableLetters = roundLetters
-        self.readyTimer = 10
-        self.timerLabel.config(text=str(self.readyTimer))
-        global a, check
-        if a and check:
-            a = False
-            check =False
-            print("need to stop")
+                check = False
+                return
+            self.afterReadyTimer()
+            threading.Thread(target=self.run()).start()
+            threading.Thread(target=self.afterReadyTimer()).start()
             return
-        self.afterReadyTimer()
-        threading.Thread(target=self.run()).start()
-        threading.Thread(target=self.afterReadyTimer()).start()
-        # self.afterReadyTimer()
-        return
+        except Exception as e:
+            warningMsg(e)
+            return
 
     def afterReadyTimer(self):
-        global a, check
-        if a and check:
-            print("need to stop")
-            a = False
-            check = False
+        try:
+            global a, check
+            if a and check:
+                a = False
+                check = False
+                return
+            self.checkRounds()
+            self.roundTimer()
+            global roundLetters
+            roundLetters = list(eo.requestLetters(int(gameID)))
+            self.availableLetters = roundLetters.copy()
+        except CORBA.TRANSIENT as e:
+            messagebox.showwarning("ERROR", "SERVER IS UNAVAILABLE")
+            quit()
             return
-        print("READY TIMER FINISH, ROUND START NA")
-        print("this is running in the background AFTERREADYTIMER")
-        self.checkRounds()
-        self.roundTimer()
-        global roundLetters
-        roundLetters = list(eo.requestLetters(int(gameID)))
-        self.availableLetters = roundLetters.copy()
+        except Exception as e:
+            warningMsg(e)
+            return
 
     # the 10 second round timer yung sa round itself
     def roundTimer(self):
-
         def roundCountDown():
-            # self.update_label_texts(roundLetters)
-            rc = False
-            # print("this is running in the background1")
-            while not rc:
-                timezz = eo.getTimer(gameID, "round")
-                print(timezz)
-                self.roundTimerLabel.config(text=str(timezz))
-                t.sleep(1)
-                timezz -= 1
-                if timezz < 0:
-                    rc = True
-                    after()
+            try:
+                rc = False
+                while not rc:
+                    timezz = eo.getTimer(gameID, "round")
+                    self.roundTimerLabel.config(text=str(timezz))
+                    t.sleep(1)
+                    timezz -= 1
+                    if timezz < 0:
+                        rc = True
+                        after()
+            except CORBA.TRANSIENT as e:
+                messagebox.showwarning("ERROR", "SERVER IS UNAVAILABLE")
+                quit()
+                return
+            except Exception as e:
+                warningMsg(e)
+                return
 
         def after():
-            print("ROUND IS OVER!!")
-            self.checkRounds()
-            self.update_label_texts_to_default()
-            time.sleep(3)
-            winnerID = str(eo.checkWinner(gameID))
-            print("WINNER OF THE ROUND: " + winnerID)
+            try:
+                print("ROUND IS OVER!!")
+                self.checkRounds()
+                self.update_label_texts_to_default()
+                time.sleep(3)
+                winnerID = str(eo.checkWinner(gameID))
+                print("WINNER OF THE ROUND: " + winnerID)
 
-            # TRUE IF WIN
-            print(str(userID) == str(winnerID))
+                if winnerID == str(userID):
+                    self.numberOfWins += 1
+                    print("YOU WON THE ROUND, WINS: " + str(self.numberOfWins))
+                    self.updateWinsNum()
 
-            if winnerID == str(userID):
-                self.numberOfWins += 1
-                print("YOU WON THE ROUND, WINS: " + str(self.numberOfWins))
-                self.updateWinsNum()
+                if winnerID == str("Game Over"):
+                    print("GAME OVER!")
+                    if str(eo.checkMatchStatus(int(gameID))) == str(userID):
+                        print("YOU WON THE GAME")
+                        print("\n\n")
+                    else:
+                        print("YOU LOST, THE WINNER IS: " + str(eo.checkMatchStatus(int(gameID))))
+                        print("\n\n")
 
-            if winnerID == str("Game Over"):
-                print("GAME OVER!")
-                if str(eo.checkMatchStatus(int(gameID))) == str(userID):
-                    print("YOU WON THE GAME")
-                    print("\n\n")
-                else:
-                    print("YOU LOST, THE WINNER IS: " + str(eo.checkMatchStatus(int(gameID))))
-                    print("\n\n")
+                global roundLetters
+                rc = False
 
-            print()
-            global roundLetters
-            rc = False
+                roundLetters = []
+                match_status = str(eo.checkMatchStatus(int(gameID)))
+                self.readyBTN.config(state="normal")
 
-            roundLetters = []
-            match_status = str(eo.checkMatchStatus(int(gameID)))
-            print(match_status + " << this is match status")
-            self.readyBTN.config(state="normal")
-
-            print("PRESS READY!!")
+                print("PRESS READY!!")
+            except CORBA.TRANSIENT as e:
+                messagebox.showwarning("ERROR", "SERVER IS UNAVAILABLE")
+                quit()
+                return
+            except Exception as e:
+                warningMsg(e)
+                return
 
         self.roundNumLab.config(text="1")
         self.roundTimerLabel.config(text="10")
 
         global a, check
         if a and check:
-            print("need to stop")
             return
 
-        # TODO HINDI NAMAN NA NAGEEXECUTE YUNG LINES AFTER NITO KASO YUNG IBANG THREAD UMAANDAR PA RIN
-        # YUNG SA UPDATING GUI TEXT WITH, READY TIMER FINISH, ROUND START NA
-        self.readyBTN.config(state="disabled")
-        # eo.getTimer(gameID, "round")
-        # time.sleep(0.1)
-        roundTimer = eo.getTimer(int(gameID), "round")
+        try:
+            self.readyBTN.config(state="disabled")
+            roundTimer = eo.getTimer(int(gameID), "round")
 
-        if a and check:
-            print("need to stop")
-            a = False
-            check = False
+            if a and check:
+                a = False
+                check = False
+                return
+
+            global roundLetters
+            if roundTimer != 10:
+                self.update_label_texts(roundLetters)
+                threading.Thread(target=roundCountDown()).start()
+        except CORBA.TRANSIENT as e:
+            messagebox.showwarning("ERROR", "SERVER IS UNAVAILABLE")
+            quit()
             return
-
-        print("ROUND TIMER START AT: " + str(roundTimer))
-        global roundLetters
-        if roundTimer != 10:
-            self.update_label_texts(roundLetters)
-            threading.Thread(target=roundCountDown()).start()
+        except Exception as e:
+            warningMsg(e)
+            return
 
     def handle_key(self, event):
         if event.keysym == "Return":
             try:
                 entered_word = self.textWordy.cget("text")
-                print("WORD SENT  : ", entered_word)
+                print("WORD SENT: ", entered_word)
                 self.textWordy.config(text="")
                 self.availableLetters = roundLetters.copy()
                 eo.checkWord(entered_word, int(gameID), int(userID))
             except Exception as e:
                 print(str(e.args[0]))
             else:
-                print("word is OK:)")
+                print("word accepted")
         elif event.keysym == "BackSpace":
             current_text = self.textWordy.cget("text")
             if current_text:
@@ -584,7 +618,6 @@ class Game(tk.Frame):
 
     # update letters in gui with random letters given by the server
     def update_label_texts(self, char_array):
-        print("UPDATING GUI TEXT WITH: " + str(char_array))
         label_texts = [getattr(self, f"letter{i}") for i in range(1, 18)]
         for i in range(len(char_array)):
             label_texts[i].configure(text=char_array[i].upper())
@@ -684,7 +717,6 @@ class Application(tk.Tk):
 
 def warningMsg(exception):
     messagebox.showwarning("ERROR", str(exception.args[0]))
-
 
 app = Application()
 app.mainloop()
