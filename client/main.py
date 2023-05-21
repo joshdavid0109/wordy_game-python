@@ -1,4 +1,6 @@
+import os
 import random
+import sys
 import threading
 import time as t
 import time
@@ -200,7 +202,7 @@ class MainMenu(tk.Frame):
 
             except CORBA.TRANSIENT as e:
                 messagebox.showwarning("ERROR", "SERVER UNAVAILABLE")
-                quit()
+                os._exit(0)
                 return
 
             except Exception as e:
@@ -241,10 +243,7 @@ class MainMenu(tk.Frame):
                     wins = player.wins
                     treeview.insert("", "end", text=str(rank), values=(username, wins))
             except CORBA.TRANSIENT as e:
-
                 messagebox.showwarning("ERROR", "SERVER UNAVAILABLE")
-                quit()
-
                 return
             except Exception as e:
                 warningMsg(e)
@@ -279,8 +278,8 @@ class MainMenu(tk.Frame):
                     word = word.word
                     treeview.insert("", "end", text=str(username), values=(word))
             except CORBA.TRANSIENT as e:
+
                 messagebox.showwarning("ERROR", "SERVER UNAVAILABLE")
-                quit()
                 return
             except Exception as e:
                 warningMsg(e)
@@ -349,13 +348,12 @@ class Game(tk.Frame):
                         self.controller.frames[MainMenu].focus_set()
                         return
         except CORBA.TRANSIENT as e:
+
             messagebox.showwarning("ERROR", "SERVER IS UNAVAILABLE")
-            quit()
+            os._exit(0)
             return
         except Exception as e:
             warningMsg(e)
-            return
-
     def checkRounds(self):
         try:
             if gameID != 0 or not None:
@@ -364,11 +362,10 @@ class Game(tk.Frame):
                 self.roundNumLab.config(text=str(self.roundNum))
         except CORBA.TRANSIENT as e:
             messagebox.showwarning("ERROR", "SERVER IS UNAVAILABLE")
-            quit()
+            os._exit(0)
             return
         except Exception as e:
             warningMsg(e)
-            return
 
     def updateWinsNum(self):
         self.winsNum.config(text=str(self.numberOfWins))
@@ -384,11 +381,10 @@ class Game(tk.Frame):
             timer_thread.start()
         except CORBA.TRANSIENT as e:
             messagebox.showwarning("ERROR", "SERVER IS UNAVAILABLE")
-            quit()
+            os._exit(0)
             return
         except Exception as e:
             warningMsg(e)
-            return
 
     # before round, after ready btn is clicked
     def timer(self):
@@ -398,7 +394,7 @@ class Game(tk.Frame):
             time.sleep(1)
         except CORBA.TRANSIENT as e:
             messagebox.showwarning("ERROR", "SERVER IS UNAVAILABLE")
-            quit()
+            os._exit(0)
             return
         except Exception as e:
             warningMsg(e)
@@ -422,7 +418,7 @@ class Game(tk.Frame):
                     roundLetters = list(eo.requestLetters(int(gameID)))
                 except CORBA.TRANSIENT as e:
                     messagebox.showwarning("ERROR", "SERVER IS UNAVAILABLE")
-                    quit()
+                    os._exit(0)
                     return
                 except Exception as e:
                     warningMsg(e)
@@ -451,7 +447,7 @@ class Game(tk.Frame):
                             return
                 except CORBA.TRANSIENT as e:
                     messagebox.showwarning("ERROR", "SERVER IS UNAVAILABLE")
-                    quit()
+                    os._exit(0)
                     return
                 except Exception as e:
                     warningMsg(e)
@@ -478,7 +474,6 @@ class Game(tk.Frame):
             return
         except Exception as e:
             warningMsg(e)
-            return
 
     def afterReadyTimer(self):
         try:
@@ -494,11 +489,10 @@ class Game(tk.Frame):
             self.availableLetters = roundLetters.copy()
         except CORBA.TRANSIENT as e:
             messagebox.showwarning("ERROR", "SERVER IS UNAVAILABLE")
-            quit()
+            os._exit(0)
             return
         except Exception as e:
             warningMsg(e)
-            return
 
     # the 10 second round timer yung sa round itself
     def roundTimer(self):
@@ -515,11 +509,10 @@ class Game(tk.Frame):
                         after()
             except CORBA.TRANSIENT as e:
                 messagebox.showwarning("ERROR", "SERVER IS UNAVAILABLE")
-                quit()
+                os._exit(0)
                 return
             except Exception as e:
                 warningMsg(e)
-                return
 
         def after():
             try:
@@ -554,7 +547,7 @@ class Game(tk.Frame):
                 print("PRESS READY!!")
             except CORBA.TRANSIENT as e:
                 messagebox.showwarning("ERROR", "SERVER IS UNAVAILABLE")
-                quit()
+                os._exit(0)
                 return
             except Exception as e:
                 warningMsg(e)
@@ -582,11 +575,10 @@ class Game(tk.Frame):
                 threading.Thread(target=roundCountDown()).start()
         except CORBA.TRANSIENT as e:
             messagebox.showwarning("ERROR", "SERVER IS UNAVAILABLE")
-            quit()
+            os._exit(0)
             return
         except Exception as e:
             warningMsg(e)
-            return
 
     def handle_key(self, event):
         if event.keysym == "Return":
@@ -597,6 +589,7 @@ class Game(tk.Frame):
                 self.availableLetters = roundLetters.copy()
                 eo.checkWord(entered_word, int(gameID), int(userID))
             except Exception as e:
+                self.availableLetters = roundLetters.copy()
                 print(str(e.args[0]))
             else:
                 print("word accepted")
