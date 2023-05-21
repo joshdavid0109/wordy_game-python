@@ -354,6 +354,7 @@ class Game(tk.Frame):
             return
         except Exception as e:
             warningMsg(e)
+
     def checkRounds(self):
         try:
             if gameID != 0 or not None:
@@ -679,7 +680,7 @@ class Game(tk.Frame):
 
 class Application(tk.Tk):
     def __init__(self, *args, **kwargs):
-        tk.Tk.__init__(self, *args, **kwargs)
+        super().__init__()
 
         window = tk.Frame(self)
         window.pack()
@@ -707,9 +708,24 @@ class Application(tk.Tk):
         frame = self.frames[page]
         frame.tkraise()
 
+    def on_window_close(self):
+        try:
+            global userID
+            if userID is not None:
+                # print("uid is meron")
+                eo.logout(int(userID))
+            # else:
+            #     print("else")
+        except Exception as e:
+            warningMsg(e)
+        finally:
+            self.destroy()
+
 
 def warningMsg(exception):
     messagebox.showwarning("ERROR", str(exception.args[0]))
 
+
 app = Application()
+app.protocol("WM_DELETE_WINDOW", app.on_window_close)
 app.mainloop()
